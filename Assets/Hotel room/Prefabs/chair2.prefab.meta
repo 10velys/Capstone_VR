@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 9612b022fb108534d95765a928378354
+timeCreated: 1428605363
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Prefabs/chair2.prefab
+  uploadId: 786198

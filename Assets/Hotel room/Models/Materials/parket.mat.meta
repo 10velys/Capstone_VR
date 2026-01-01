@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ddfc90ff4d2000d4cba4a2759b0e40e2
+timeCreated: 1428519696
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Models/Materials/parket.mat
+  uploadId: 786198

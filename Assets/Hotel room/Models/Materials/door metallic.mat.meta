@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 2cc91aec25c55fb4abc77cec0de882e5
+timeCreated: 1458027505
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Models/Materials/door metallic.mat
+  uploadId: 786198

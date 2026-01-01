@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 4baf714ada5961949abbec2f635ec6c9
+timeCreated: 1438330871
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Models/Materials/sign.mat
+  uploadId: 786198

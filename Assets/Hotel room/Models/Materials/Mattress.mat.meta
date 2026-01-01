@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 891bb14fd5923634892ec93d225a9709
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Models/Materials/Mattress.mat
+  uploadId: 786198

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 4c9066646bd85f441a57c98abc665734
+timeCreated: 1428681386
+licenseType: Store
+TextScriptImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Readme.txt
+  uploadId: 786198

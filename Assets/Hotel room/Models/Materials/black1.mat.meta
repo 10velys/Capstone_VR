@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 1a0462216c8d072448f9c3caccf3aaf7
+timeCreated: 1428516832
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Models/Materials/black1.mat
+  uploadId: 786198

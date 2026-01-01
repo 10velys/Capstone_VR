@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: b2b889aa29e375a4ab76958dda901068
+timeCreated: 1438674141
+licenseType: Store
+DefaultImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Scene/Demo.unity
+  uploadId: 786198

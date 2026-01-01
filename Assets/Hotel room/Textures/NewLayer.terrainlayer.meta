@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 39e9b508116a4ab4ab0bf8573f53e7cd
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 8574412962073106934
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Textures/NewLayer.terrainlayer
+  uploadId: 786198

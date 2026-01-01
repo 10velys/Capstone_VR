@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 061aa15926c206d48a30080b9687a292
+timeCreated: 1458110761
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Models/Materials/toilet material.mat
+  uploadId: 786198

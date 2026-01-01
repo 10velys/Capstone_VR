@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: dc14e6ec15764184dbe8dbf5af05042a
+timeCreated: 1458235538
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Prefabs/Soap.prefab
+  uploadId: 786198

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 94f37f924ce3f0449be306e722cf7f33
+timeCreated: 1458229186
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Prefabs/Shower bath.prefab
+  uploadId: 786198

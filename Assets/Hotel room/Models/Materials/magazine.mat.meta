@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 6b25b43e3807a7143b463f080ec22b60
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Models/Materials/magazine.mat
+  uploadId: 786198

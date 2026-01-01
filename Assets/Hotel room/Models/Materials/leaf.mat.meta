@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 5a3b1ce2681d0c343b90a26db4de5847
+timeCreated: 1428562497
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Models/Materials/leaf.mat
+  uploadId: 786198

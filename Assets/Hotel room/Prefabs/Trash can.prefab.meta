@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 973a0aa17f3c76c4c84fbda30a043603
+timeCreated: 1458073991
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Prefabs/Trash can.prefab
+  uploadId: 786198

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 56c4e0d6bda5191439aa33a18a181144
+timeCreated: 1458237936
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Prefabs/Toilet.prefab
+  uploadId: 786198

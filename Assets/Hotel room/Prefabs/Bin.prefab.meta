@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: e3bc31c911521104499d405a6275422f
+timeCreated: 1457985419
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Prefabs/Bin.prefab
+  uploadId: 786198

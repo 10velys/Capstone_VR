@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: c259aee7598cd874c9bb00201dd062e0
+timeCreated: 1438669930
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Prefabs/bedside table.prefab
+  uploadId: 786198

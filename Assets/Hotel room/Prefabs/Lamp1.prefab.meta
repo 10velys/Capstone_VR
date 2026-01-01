@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: d0d4cc1dc31fe2f4f943ce3eb7959dc7
+timeCreated: 1458047106
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Prefabs/Lamp1.prefab
+  uploadId: 786198

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 4a31319645a0ca749924440cee604096
+timeCreated: 1458047646
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Prefabs/phone.prefab
+  uploadId: 786198

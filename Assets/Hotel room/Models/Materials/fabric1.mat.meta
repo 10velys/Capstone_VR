@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ff255a12732f31c4f905afacc7f8c513
+timeCreated: 1438624764
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Models/Materials/fabric1.mat
+  uploadId: 786198

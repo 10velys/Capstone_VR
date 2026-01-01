@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: bf9c18ef92326fa44ae19323857975a5
+timeCreated: 1428604574
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Models/Materials/curtains.mat
+  uploadId: 786198

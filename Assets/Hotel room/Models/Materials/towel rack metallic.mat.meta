@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 036ae0767e441344e92da9bb965f5645
+timeCreated: 1458141863
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Models/Materials/towel rack metallic.mat
+  uploadId: 786198

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: c0ca4695bcd82404885cdf4568eaeec3
+timeCreated: 1458046350
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Models/Materials/glasses material.mat
+  uploadId: 786198

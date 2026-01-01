@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: bf100875c1302af46971025bbfbd84c1
+timeCreated: 1458228907
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Models/Materials/metallic tap.mat
+  uploadId: 786198

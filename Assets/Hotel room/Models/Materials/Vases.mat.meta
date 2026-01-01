@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 2548a1e4668684246bbf66514a14e862
+timeCreated: 1428663296
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Models/Materials/Vases.mat
+  uploadId: 786198

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: dc8ec2ae8bc7aa844a39db7a44f807c0
+timeCreated: 1428513711
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Models/Materials/Windows.mat
+  uploadId: 786198

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 3d84c9840504d1b4996c2399d000a8a6
+timeCreated: 1457989136
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Models/Materials/chair wood.mat
+  uploadId: 786198

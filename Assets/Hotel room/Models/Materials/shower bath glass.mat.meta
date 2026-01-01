@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 2ecb54ba70ef9994bbb0aa8c5601c7b4
+timeCreated: 1458220123
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Models/Materials/shower bath glass.mat
+  uploadId: 786198

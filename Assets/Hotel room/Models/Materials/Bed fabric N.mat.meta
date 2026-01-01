@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: e1ded609ff5ef454b86418684f1d5126
+timeCreated: 1458402125
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Models/Materials/Bed fabric N.mat
+  uploadId: 786198

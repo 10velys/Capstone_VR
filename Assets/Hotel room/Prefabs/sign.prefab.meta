@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 11f05bb026799274e86f10039a97a84c
+timeCreated: 1458055908
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Prefabs/sign.prefab
+  uploadId: 786198

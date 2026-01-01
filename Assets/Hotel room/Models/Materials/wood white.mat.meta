@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: b3e3712b0b7b956458a5011fbd95a926
+timeCreated: 1428514853
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Models/Materials/wood white.mat
+  uploadId: 786198

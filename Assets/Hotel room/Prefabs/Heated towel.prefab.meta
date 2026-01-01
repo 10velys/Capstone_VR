@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: b840b9fc27e254148b1c921405ff2172
+timeCreated: 1458074027
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Prefabs/Heated towel.prefab
+  uploadId: 786198

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 796b73790985abf449f6030338edd3f0
+timeCreated: 1428570397
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Models/Materials/lamp.mat
+  uploadId: 786198

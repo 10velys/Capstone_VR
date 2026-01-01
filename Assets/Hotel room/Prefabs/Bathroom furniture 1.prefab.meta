@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 0b2d41d8d9f75e64c819cb294e792678
+timeCreated: 1458074011
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Prefabs/Bathroom furniture 1.prefab
+  uploadId: 786198

@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: a6b39499ff8efb348858185c82984ab1
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Scripts/InteractiveObject.cs
+  uploadId: 786198

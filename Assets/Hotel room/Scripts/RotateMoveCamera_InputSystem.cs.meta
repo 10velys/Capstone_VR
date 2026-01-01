@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 847b3e6c9bf574344b0456e9de67c036
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Scripts/RotateMoveCamera_InputSystem.cs
+  uploadId: 786198

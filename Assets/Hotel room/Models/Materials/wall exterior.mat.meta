@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 5b0ab620e5865c84eaa70aef72b70f7e
+timeCreated: 1458114429
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 34129
+  packageName: Hotel room
+  packageVersion: 1.3
+  assetPath: Assets/Hotel room/Models/Materials/wall exterior.mat
+  uploadId: 786198
