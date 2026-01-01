@@ -1,0 +1,2 @@
+C:\Users\Audi Aulia\UnityProjects\Project-VR-1\Project-VR-1\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\CMakeLists.txt
+C:\Users\Audi Aulia\UnityProjects\Project-VR-1\Project-VR-1\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\CMakeLists.txt
