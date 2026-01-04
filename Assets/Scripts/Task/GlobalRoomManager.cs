@@ -67,6 +67,10 @@ public class GlobalRoomManager : MonoBehaviour
     {
         Debug.Log(">>> PHASE 1 STARTED: TRASH <<<");
         
+        if (VRTrainingRecorder.Instance != null)
+        {
+            VRTrainingRecorder.Instance.StartRecording();
+        }
         // Pastikan TrashManager ada
         if(trashManager != null) 
         {
@@ -127,5 +131,12 @@ public class GlobalRoomManager : MonoBehaviour
         if(towelManager) towelManager.ToggleInteraction(false);
         if(towelHintScript) towelHintScript.enabled = false;
         if(towelDiamondObj) towelDiamondObj.SetActive(false);
+
+        // --- TAMBAHAN: STOP & SAVE CSV ---
+        if (VRTrainingRecorder.Instance != null)
+        {
+            // Kirim 'true' karena user berhasil menyelesaikan semua task
+            VRTrainingRecorder.Instance.StopAndSave(true); 
+        }
     }
 }
