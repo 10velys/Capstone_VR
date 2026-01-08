@@ -202,7 +202,7 @@ public class VRTrainingRecorder : MonoBehaviour
         }
     }
 
-    // --- YOLO BRIDGE ---
+    // --- YOLO BRIDGE (LAMA) ---
     public void SetDetectedObject(int classId, float confidence)
     {
         detectedClass = classId;
@@ -210,4 +210,16 @@ public class VRTrainingRecorder : MonoBehaviour
     }
 
     public void LogEvent(string ev) => pendingEvent = ev;
+
+    // --- INTEGRASI YOLO (BARU) ---
+    // Method ini dipanggil otomatis oleh script YoloDetector
+    public void UpdateYoloData(int classIndex, float confidence)
+    {
+        this.detectedClass = classIndex;
+        this.detectedConf = confidence;
+
+        // Opsional: Jika kamu ingin mencatat data ini ke CSV setiap kali ada perubahan deteksi
+        // Uncomment baris di bawah ini jika perlu logging real-time
+        // Debug.Log($"YOLO Update -> Class: {classIndex}, Conf: {confidence}");
+    }
 }
