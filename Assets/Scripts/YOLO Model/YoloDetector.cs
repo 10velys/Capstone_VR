@@ -1,12 +1,12 @@
 using UnityEngine;
-
+using Unity.InferenceEngine; // Namespace Paket
 using System.Collections.Generic;
 using System.Linq;
 
 public class YoloDetector : MonoBehaviour
 {
     [Header("Model Settings")]
-    public Unity.InferenceEngine.ModelAsset modelAsset;
+    public ModelAsset modelAsset;
     public RenderTexture inputTexture; 
     public string[] labels; 
 
@@ -17,33 +17,33 @@ public class YoloDetector : MonoBehaviour
     [Header("Integration")]
     public VRTrainingRecorder recorder; 
 
-    // Sentis 2.4.1 menggunakan Worker (BUKAN IWorker!)
-    private Unity.InferenceEngine.Model runtimeModel;
-    private Unity.InferenceEngine.Worker worker; // <--- INI YANG BENAR UNTUK SENTIS 2.4.1
+    // --- PERBAIKAN DI SINI ---
+    private Model runtimeModel;
+    private Worker worker; // Menggunakan class konkrit 'Worker' (Bukan IWorker)
     
-    // Konstanta YOLOv8 standar
     private const int ImageSize = 640; 
 
     void Start()
     {
         if (modelAsset == null || inputTexture == null)
         {
-            Debug.LogError("[YOLO] Model atau Input Texture belum dipasang!");
+            Debug.LogError("[YOLO] Model Asset atau Input Texture belum di-assign!");
             return;
         }
 
-        // 1. Load Model - Sentis 2.4.1
-        runtimeModel = Unity.InferenceEngine.ModelLoader.Load(modelAsset);
+        // 1. Load Model
+        runtimeModel = ModelLoader.Load(modelAsset);
 
-        // 2. Buat Worker - Sentis 2.4.1 API (tanpa WorkerFactory)
-        worker = new Unity.InferenceEngine.Worker(runtimeModel, Unity.InferenceEngine.BackendType.GPUCompute);
+        // 2. Buat Worker
+        // Karena IWorker tidak ada, kita gunakan constructor langsung 'new Worker'
+        // Ini adalah cara standar di beberapa versi Inference Engine
+        worker = new Worker(runtimeModel, BackendType.GPUCompute);
 
-        Debug.Log("[YOLO] Model Loaded & Ready (Sentis 2.4.1)");
+        Debug.Log($"[YOLO] Ready. Backend: {worker.backendType}");
     }
 
-    // Timer agar tidak memberatkan VR
     float timer = 0;
-    float detectionInterval = 0.2f; // Deteksi 5 kali per detik
+    float detectionInterval = 0.2f;
 
     void Update()
     {
@@ -59,23 +59,33 @@ public class YoloDetector : MonoBehaviour
     {
         if (worker == null) return;
 
-        // 3. Convert Texture ke Tensor - Sentis 2.4.1
-        using var inputTensor = Unity.InferenceEngine.TextureConverter.ToTensor(inputTexture, width: ImageSize, height: ImageSize, channels: 3);
+        // 1. Siapkan Tensor Kosong dengan Ukuran Pasti (1, 640, 640, 3)
+        // TensorShape ini yang akan menjadi acuan ukuran (Source of Truth)
+        using var inputTensor = new Tensor<float>(new TensorShape(1, ImageSize, ImageSize, 3));
 
-        // 4. Jalankan Model
+        // 2. Siapkan Transform (Tanpa SetDimensions)
+        // Cukup buat instance baru, dia otomatis menyesuaikan resize ke ukuran inputTensor di atas
+        var transform = new TextureTransform(); 
+
+        // 3. Masukkan data Texture ke dalam Tensor
+        TextureConverter.ToTensor(inputTexture, inputTensor, transform);
+
+        // 4. Eksekusi Model
         worker.Schedule(inputTensor);
 
-        // 5. Ambil Output - Sentis 2.4.1 API
-        var outputTensor = worker.PeekOutput() as Unity.InferenceEngine.Tensor<float>;
+        // 5. Ambil Output
+        var outputTensor = worker.PeekOutput() as Tensor<float>;
 
-        // Download dari GPU ke CPU - Sentis 2.4.1 menggunakan ReadbackAndClone
+        if (outputTensor == null) return;
+
+        // Download ke CPU
         using var cpuTensor = outputTensor.ReadbackAndClone();
         
-        // Ambil data sebagai array - gunakan length bukan shape
-        var downloadedData = cpuTensor.dataOnBackend.Download<float>(cpuTensor.shape.length);
-        float[] outputArray = downloadedData.ToArray();
+        // Ambil data array
+        var dataRef = cpuTensor.dataOnBackend.Download<float>(cpuTensor.shape.length);
+        float[] outputArray = dataRef.ToArray();
 
-        // 6. Proses Data Mentah
+        // 6. Proses
         ProcessYoloOutput(outputArray);
     }
 
