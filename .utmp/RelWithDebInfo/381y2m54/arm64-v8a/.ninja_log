@@ -1,10 +1,19 @@
 # ninja log v5
 89	3128	7892077888608376	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	bdb4115201ef20ae
 49	3150	7892077888644464	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	1c08e96dd5b41bc8
-33	3188	7892077889310946	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	dd224e1843466164
-113	3235	7892077889666025	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	ffb48ae071a6a165
-1	3336	7892077890728854	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	bdfcaf4bdd012c84
 133	3742	7892077894888186	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	8380815b33b314b7
+33	3188	7892077889310946	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	dd224e1843466164
+1	3336	7892077890728854	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	bdfcaf4bdd012c84
+113	3235	7892077889666025	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	ffb48ae071a6a165
 65	3766	7892077895120263	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	31d282eb5c5adc03
-18	3971	7892077897151801	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	9e1a30a443773b7c
 3984	4311	7892077900603566	C:/Users/mulya/Project-VR-1/Project-VR-1/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/381y2m54/obj/arm64-v8a/libgame.so	472ed571ea7016e6
+18	3971	7892077897151801	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	9e1a30a443773b7c
+137	8527	7897557987328522	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	bdb4115201ef20ae
+56	8532	7897557987354269	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	1c08e96dd5b41bc8
+69	8547	7897557987517086	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	dd224e1843466164
+115	8595	7897557988033447	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	ffb48ae071a6a165
+81	8660	7897557988711598	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	bdfcaf4bdd012c84
+98	8891	7897557991060488	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	31d282eb5c5adc03
+160	9000	7897557992147162	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	8380815b33b314b7
+21	9025	7897557992349613	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	9e1a30a443773b7c
+9025	9347	7897557995646336	C:/Users/mulya/Project-VR-1/Project-VR-1/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/381y2m54/obj/arm64-v8a/libgame.so	472ed571ea7016e6

@@ -1,8 +1,12 @@
 using UnityEngine;
-using System.Collections; // Butuh ini untuk IEnumerator
+using System.Collections; 
 
 public class GlobalRoomManager : MonoBehaviour
 {
+    [Header("Game Settings")]
+    [Tooltip("Isi dengan 1, 2, atau 3 sesuai Scene Level ini")]
+    [Range(1, 3)] public int currentLevelStage = 1; // Diganti namanya agar lebih jelas
+
     [Header("Managers")]
     public TrashManager trashManager;
     public BedTaskManager bedManager;
@@ -20,9 +24,6 @@ public class GlobalRoomManager : MonoBehaviour
 
     private void Start()
     {
-        // PENTING: Jangan langsung matikan di detik ke-0.
-        // Biarkan semua script 'Start' berjalan dulu (termasuk Auto-Fix collider di TrashManager).
-        // Kita gunakan Coroutine untuk mengatur urutan loading.
         StartCoroutine(InitSequence());
     }
 
@@ -30,17 +31,13 @@ public class GlobalRoomManager : MonoBehaviour
     {
         Debug.Log("GlobalManager: Menunggu inisialisasi script lain...");
         
-        // 1. Tunggu 0.1 detik agar TrashManager.Start() selesai dijalankan Unity
         yield return new WaitForSeconds(0.1f);
 
-        // 2. Matikan SEMUA Interaksi & Hint
         Debug.Log("GlobalManager: Reset All Tasks...");
         DisableAllTasks();
 
-        // 3. Tunggu lagi sebentar (1 detik) biar fisika stabil
         yield return new WaitForSeconds(1.0f);
 
-        // 4. Mulai Task Pertama
         StartTrashTask();
     }
 
@@ -67,18 +64,24 @@ public class GlobalRoomManager : MonoBehaviour
     {
         Debug.Log(">>> PHASE 1 STARTED: TRASH <<<");
         
+        // --- INTEGRASI RECORDER ---
         if (VRTrainingRecorder.Instance != null)
         {
+            // 1. Kirim Info Level (1/2/3) ke Recorder untuk Data CSV
+            VRTrainingRecorder.Instance.current_level = currentLevelStage;
+
+            // 2. Mulai Recording (Logic baru: Reset memori & Timer)
             VRTrainingRecorder.Instance.StartRecording();
         }
-        // Pastikan TrashManager ada
+        else
+        {
+            Debug.LogWarning("VRTrainingRecorder tidak ditemukan di Scene!");
+        }
+        // -------------------------
+
         if(trashManager != null) 
         {
-            trashManager.ToggleInteraction(true); // Panggil fungsi enable
-        }
-        else 
-        {
-            Debug.LogError("TrashManager belum dimasukkan ke Inspector GlobalRoomManager!");
+            trashManager.ToggleInteraction(true); 
         }
         
         if(trashHintScript) trashHintScript.enabled = true;      
@@ -93,7 +96,6 @@ public class GlobalRoomManager : MonoBehaviour
         if(trashHintScript) trashHintScript.enabled = false;      
         if(trashDiamondObj) trashDiamondObj.SetActive(false);     
         
-        // Lanjut Phase 2
         StartBedTask();
     }
 
@@ -132,11 +134,11 @@ public class GlobalRoomManager : MonoBehaviour
         if(towelHintScript) towelHintScript.enabled = false;
         if(towelDiamondObj) towelDiamondObj.SetActive(false);
 
-        // --- TAMBAHAN: STOP & SAVE CSV ---
+        // --- STOP RECORDER & SAVE ---
         if (VRTrainingRecorder.Instance != null)
         {
-            // Kirim 'true' karena user berhasil menyelesaikan semua task
-            VRTrainingRecorder.Instance.StopAndSave(true); 
+            // Panggil fungsi Save (Method ini otomatis melakukan kalkulasi agregasi & tulis CSV)
+            VRTrainingRecorder.Instance.StopAndSave(); 
         }
     }
 }

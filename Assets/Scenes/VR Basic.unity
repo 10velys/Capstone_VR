@@ -11985,6 +11985,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 358f5e9a8ddec604f9ccec6e648fe0e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GlobalRoomManager
+  currentLevelStage: 1
   trashManager: {fileID: 378420774}
   bedManager: {fileID: 1407205233}
   towelManager: {fileID: 617947055}
@@ -13074,7 +13075,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VRTrainingRecorder
   headCamera: {fileID: 1044876664}
   rightController: {fileID: 734948826}
-  recordFrequency: 0.04
+  current_level: 1
   hesitationThreshold: 0.05
 --- !u!1 &1853498995
 GameObject:

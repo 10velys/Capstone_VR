@@ -1,5 +1,5 @@
 using UnityEngine;
-using Unity.InferenceEngine; // Namespace Paket
+using Unity.InferenceEngine; // Namespace Paket 2.4.0
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,35 +15,24 @@ public class YoloDetector : MonoBehaviour
     [Range(0f, 1f)] public float iouThreshold = 0.4f;
 
     [Header("Integration")]
-    public VRTrainingRecorder recorder; 
+    public VRTrainingRecorder recorder; // WAJIB DI-ASSIGN
 
-    // --- PERBAIKAN DI SINI ---
+    // Variables
     private Model runtimeModel;
-    private Worker worker; // Menggunakan class konkrit 'Worker' (Bukan IWorker)
-    
+    private Worker worker;
     private const int ImageSize = 640; 
 
     void Start()
     {
-        if (modelAsset == null || inputTexture == null)
-        {
-            Debug.LogError("[YOLO] Model Asset atau Input Texture belum di-assign!");
-            return;
-        }
-
-        // 1. Load Model
+        if (modelAsset == null || inputTexture == null) return;
         runtimeModel = ModelLoader.Load(modelAsset);
-
-        // 2. Buat Worker
-        // Karena IWorker tidak ada, kita gunakan constructor langsung 'new Worker'
-        // Ini adalah cara standar di beberapa versi Inference Engine
         worker = new Worker(runtimeModel, BackendType.GPUCompute);
-
-        Debug.Log($"[YOLO] Ready. Backend: {worker.backendType}");
     }
 
+    // Jalankan inferensi lebih cepat dari recording (misal 0.2s)
+    // Supaya saat Recorder mengambil data di detik ke-1, datanya fresh.
     float timer = 0;
-    float detectionInterval = 0.2f;
+    float detectionInterval = 0.2f; 
 
     void Update()
     {
@@ -59,33 +48,19 @@ public class YoloDetector : MonoBehaviour
     {
         if (worker == null) return;
 
-        // 1. Siapkan Tensor Kosong dengan Ukuran Pasti (1, 640, 640, 3)
-        // TensorShape ini yang akan menjadi acuan ukuran (Source of Truth)
         using var inputTensor = new Tensor<float>(new TensorShape(1, ImageSize, ImageSize, 3));
-
-        // 2. Siapkan Transform (Tanpa SetDimensions)
-        // Cukup buat instance baru, dia otomatis menyesuaikan resize ke ukuran inputTensor di atas
         var transform = new TextureTransform(); 
-
-        // 3. Masukkan data Texture ke dalam Tensor
         TextureConverter.ToTensor(inputTexture, inputTensor, transform);
 
-        // 4. Eksekusi Model
         worker.Schedule(inputTensor);
 
-        // 5. Ambil Output
         var outputTensor = worker.PeekOutput() as Tensor<float>;
-
         if (outputTensor == null) return;
 
-        // Download ke CPU
         using var cpuTensor = outputTensor.ReadbackAndClone();
-        
-        // Ambil data array
         var dataRef = cpuTensor.dataOnBackend.Download<float>(cpuTensor.shape.length);
         float[] outputArray = dataRef.ToArray();
 
-        // 6. Proses
         ProcessYoloOutput(outputArray);
     }
 
@@ -105,7 +80,6 @@ public class YoloDetector : MonoBehaviour
             {
                 int index = ((4 + c) * numProposals) + i;
                 float score = data[index];
-
                 if (score > maxScore)
                 {
                     maxScore = score;
@@ -119,7 +93,6 @@ public class YoloDetector : MonoBehaviour
                 float y = data[(1 * numProposals) + i];
                 float w = data[(2 * numProposals) + i];
                 float h = data[(3 * numProposals) + i];
-
                 float xMin = x - (w / 2);
                 float yMin = y - (h / 2);
 
@@ -134,16 +107,21 @@ public class YoloDetector : MonoBehaviour
 
         var finalDetections = DoNMS(detections);
 
+        // --- INTEGRASI KE RECORDER ---
         if (finalDetections.Count > 0)
         {
             Detection best = finalDetections[0];
             if (recorder != null)
             {
+                // Kirim ID Kelas dan Confidence Score ke Recorder
+                // Ini akan disimpan di variabel sementara di Recorder
+                // dan baru dicatat ke List saat timer Recorder (1 detik) berdetak.
                 recorder.UpdateYoloData(best.classId, best.score);
             }
         }
         else
         {
+            // Jika tidak ada deteksi, kirim -1 dan confidence 0
             if (recorder != null) recorder.UpdateYoloData(-1, 0f);
         }
     }
@@ -158,14 +136,10 @@ public class YoloDetector : MonoBehaviour
             Detection current = inputDetections[0];
             results.Add(current);
             inputDetections.RemoveAt(0);
-
             for (int i = inputDetections.Count - 1; i >= 0; i--)
             {
                 float iou = GetIoU(current.box, inputDetections[i].box);
-                if (iou > iouThreshold)
-                {
-                    inputDetections.RemoveAt(i);
-                }
+                if (iou > iouThreshold) inputDetections.RemoveAt(i);
             }
         }
         return results;
@@ -177,10 +151,8 @@ public class YoloDetector : MonoBehaviour
         float yA = Mathf.Max(boxA.y, boxB.y);
         float xB = Mathf.Min(boxA.x + boxA.width, boxB.x + boxB.width);
         float yB = Mathf.Min(boxA.y + boxA.height, boxB.y + boxB.height);
-
         float interArea = Mathf.Max(0, xB - xA) * Mathf.Max(0, yB - yA);
         float unionArea = (boxA.width * boxA.height) + (boxB.width * boxB.height) - interArea;
-
         return interArea / unionArea;
     }
 
