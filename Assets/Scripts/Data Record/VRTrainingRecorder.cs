@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq; // Penting untuk perhitungan Rata-rata & Sum
+using System.Linq; // Wajib ada untuk fungsi Distinct(), Count(), Average()
 
 public class VRTrainingRecorder : MonoBehaviour
 {
@@ -12,8 +12,12 @@ public class VRTrainingRecorder : MonoBehaviour
     public Transform rightController;
 
     [Header("Session Settings")]
-    public int current_level = 1; // Bisa diubah via GameManager saat ganti level
-    public float hesitationThreshold = 0.05f; // Velocity < 0.05 dianggap ragu
+    public int current_level = 1; 
+    public float hesitationThreshold = 0.05f; 
+    
+    // Threshold minimal confidence agar dianggap tugas VALID selesai
+    // Jika YOLO mendeteksi tapi confidence cuma 0.4, tidak akan dihitung.
+    public float validDetectionThreshold = 0.6f; 
 
     // --- STATE VARIABLES ---
     private string session_id;
@@ -21,27 +25,29 @@ public class VRTrainingRecorder : MonoBehaviour
     private float startTime;
     private float nextRecordTime = 0f;
 
-    // --- PHYSICS TEMP VARS (Real-time calculation) ---
+    // --- PHYSICS TEMP VARS ---
     private Vector3 lastHandPos;
-    private float currentVelInst; // Kecepatan saat ini (dihitung tiap frame)
-    private float currentJerkInst; // Hentakan saat ini (dihitung tiap frame)
+    private float currentVelInst; 
+    private float currentJerkInst; 
     private Vector3 lastHandVel;
     private Vector3 lastHandAcc;
 
     // --- YOLO INPUT (Updated by YoloDetector) ---
-    private int current_detected_class = -1;
+    // Default -1 artinya tidak ada object terdeteksi
+    private int current_detected_class = -1; 
     private float current_detected_conf = 0f;
 
     // --- TEMPORARY RAW DATA STORAGE (IN MEMORY) ---
-    // Class kecil untuk menyimpan snapshot data per detik
+    // Class untuk menyimpan snapshot data per detik (Data Logging)
     private class RawDataPoint
     {
         public float hand_velocity_inst;
         public float hand_jerk_inst;
         public float head_pitch;
+        
+        // Kita butuh Class ID untuk tahu objek mana yang selesai (Bantal/Sampah/Handuk)
+        public int detected_class; 
         public float detected_conf;
-        // detected_class disimpan jika butuh logika spesifik, 
-        // tapi untuk task_completion_rate kita butuh confidennya.
     }
 
     private List<RawDataPoint> rawDataLog = new List<RawDataPoint>();
@@ -61,10 +67,10 @@ public class VRTrainingRecorder : MonoBehaviour
         PlayerPrefs.Save();
 
         // 2. Reset State
-        rawDataLog.Clear(); // Hapus memori lama
+        rawDataLog.Clear(); 
         isRecording = true;
         startTime = Time.time;
-        nextRecordTime = startTime; // Rekam detik ke-0
+        nextRecordTime = startTime; 
 
         // 3. Reset Physics
         if (rightController != null)
@@ -74,7 +80,7 @@ public class VRTrainingRecorder : MonoBehaviour
             lastHandAcc = Vector3.zero;
         }
 
-        Debug.Log($"[RECORDER] Session {session_id} Started. Logging at 1 Hz.");
+        Debug.Log($"[RECORDER] Session {session_id} Started.");
     }
 
     public void StopAndSave()
@@ -82,18 +88,17 @@ public class VRTrainingRecorder : MonoBehaviour
         if (!isRecording) return;
         isRecording = false;
 
-        // Proses Aggregasi Data dari Memory List -> CSV
+        // Proses Agregasi Data dari Memory -> CSV
         ProcessAndSaveAggregation();
 
-        Debug.Log($"[RECORDER] Session Stopped. Summary Saved.");
+        Debug.Log($"[RECORDER] Session Stopped. Aggregated Data Saved.");
     }
 
     void Update()
     {
         if (!isRecording || rightController == null) return;
 
-        // A. HITUNG FISIKA (Setiap Frame agar akurat)
-        // Kita butuh nilai instantaneous (saat ini) yang akurat untuk disnapshot nanti
+        // A. HITUNG FISIKA (Real-time per frame)
         float dt = Time.deltaTime;
         if (dt > 0)
         {
@@ -110,22 +115,21 @@ public class VRTrainingRecorder : MonoBehaviour
             lastHandAcc = currentAcc;
         }
 
-        // B. DATA LOGGING (1 Detik Sekali)
+        // B. DATA LOGGING (1 Detik Sekali - Disimpan di Memory Saja)
         if (Time.time >= nextRecordTime)
         {
             LogSnapshotInMemory();
-            nextRecordTime = Time.time + 1.0f; // Interval fix 1 detik
+            nextRecordTime = Time.time + 1.0f; 
         }
     }
 
-    // Fungsi menyimpan data mentah ke RAM (List)
     void LogSnapshotInMemory()
     {
         float pitch = 0f;
         if (headCamera != null)
         {
             pitch = headCamera.eulerAngles.x;
-            if (pitch > 180) pitch -= 360; // Normalisasi -180 s/d 180
+            if (pitch > 180) pitch -= 360; 
         }
 
         RawDataPoint point = new RawDataPoint
@@ -133,54 +137,68 @@ public class VRTrainingRecorder : MonoBehaviour
             hand_velocity_inst = currentVelInst,
             hand_jerk_inst = currentJerkInst,
             head_pitch = pitch,
+            // Simpan data YOLO saat ini (Data Logging)
+            detected_class = current_detected_class, 
             detected_conf = current_detected_conf
         };
 
         rawDataLog.Add(point);
     }
 
-    // Fungsi Utama: Mengubah Raw Data -> Aggregated Data -> CSV
+    // --- LOGIKA BARU AGREGASI ---
     void ProcessAndSaveAggregation()
     {
         if (rawDataLog.Count == 0) return;
 
-        // --- 1. HITUNG DATA AGREGASI (Sesuai Rumus PDF) ---
-
-        // a. avg_hand_velocity
+        // 1. avg_hand_velocity
         float avg_hand_velocity = rawDataLog.Average(x => x.hand_velocity_inst);
 
-        // b. max_hand_jerk
+        // 2. max_hand_jerk
         float max_hand_jerk = rawDataLog.Max(x => x.hand_jerk_inst);
 
-        // c. hesitation_time
-        // Rumus: Count(velocity < 0.05) * 1 detik (karena interval kita 1 detik)
+        // 3. hesitation_time
         int hesitationCount = rawDataLog.Count(x => x.hand_velocity_inst < hesitationThreshold);
         float hesitation_time = hesitationCount * 1.0f; 
 
-        // d. focus_consistency (StdDev of head_pitch)
+        // 4. focus_consistency
         float focus_consistency = CalculateStdDev(rawDataLog.Select(x => x.head_pitch).ToList());
 
-        // e. total_duration
+        // 5. total_duration
         float total_duration = Time.time - startTime;
 
-        // f. task_completion_rate (Mean of detected_conf)
-        // Rata-rata confidence YOLO sepanjang sesi
-        float task_completion_rate = rawDataLog.Average(x => x.detected_conf);
+        // --- 6. TASK COMPLETION RATE (REVISI) ---
+        // Logika: 
+        // a. Ambil semua data logging di mana confidence > threshold (misal 0.6).
+        // b. Ambil ID unik (detected_class) dari data tersebut.
+        //    Contoh: Jika terdeteksi Sampah(0), Sampah(0), Bantal(1) -> Unik: {0, 1}.
+        // c. Hitung jumlah ID uniknya. Jika semua 3 tugas terdeteksi, hasilnya 3.
+        
+        var validDetections = rawDataLog
+            .Where(x => x.detected_conf >= validDetectionThreshold && x.detected_class != -1)
+            .Select(x => x.detected_class)
+            .Distinct() // Hapus duplikat (supaya Bantal yg terdeteksi 100x tetap dihitung 1)
+            .ToList();
 
-        // --- 2. TULIS KE CSV ---
+        float task_completion_rate = validDetections.Count; 
+
+        // Debugging (Cek di Console apa saja yang terdeteksi)
+        string detectedIDs = string.Join(", ", validDetections);
+        Debug.Log($"[AGREGASI] Task Selesai: {task_completion_rate} (ID: {detectedIDs})");
+
+
+        // --- 7. TULIS KE CSV ---
         string filePath = Path.Combine(Application.persistentDataPath, "Session_Summary.csv");
         bool fileExists = File.Exists(filePath);
 
         using (StreamWriter writer = new StreamWriter(filePath, true))
         {
-            // Buat Header jika file baru (Sesuai nama variabel Gambar Aggregasi)
             if (!fileExists)
             {
+                // Header sesuai tabel
                 writer.WriteLine("session_id,current_level,avg_hand_velocity,max_hand_jerk,hesitation_time,focus_consistency,total_duration,task_completion_rate");
             }
 
-            // Tulis Baris Data
-            string line = string.Format("{0},{1},{2:F4},{3:F4},{4:F2},{5:F4},{6:F2},{7:F4}",
+            string line = string.Format("{0},{1},{2:F4},{3:F4},{4:F2},{5:F4},{6:F2},{7:F0}", // F0 agar task_rate bulat (1, 2, 3)
                 session_id,
                 current_level,
                 avg_hand_velocity,
@@ -195,18 +213,14 @@ public class VRTrainingRecorder : MonoBehaviour
         }
     }
 
-    // Helper: Menghitung Standard Deviation
     float CalculateStdDev(List<float> values)
     {
         if (values.Count <= 1) return 0f;
-
         float avg = values.Average();
         float sumSqDiff = values.Sum(d => (d - avg) * (d - avg));
         return Mathf.Sqrt(sumSqDiff / values.Count);
     }
 
-    // --- YOLO INTEGRATION ---
-    // Dipanggil oleh script YoloDetector.cs secara real-time
     public void UpdateYoloData(int classIndex, float confidence)
     {
         this.current_detected_class = classIndex;
