@@ -15,9 +15,9 @@ public class VRTrainingRecorder : MonoBehaviour
     public int current_level = 1; 
     public float hesitationThreshold = 0.05f; 
     
-    // Threshold minimal confidence agar dianggap tugas VALID selesai
-    // Jika YOLO mendeteksi tapi confidence cuma 0.4, tidak akan dihitung.
-    public float validDetectionThreshold = 0.6f; 
+    // Threshold minimal confidence agar dianggap tugas VALID selesai.
+    // PENTING: Atur nilai ini di Inspector Unity (misal: 0.5 atau 0.6)
+    public float validDetectionThreshold = 0.5f; 
 
     // --- STATE VARIABLES ---
     private string session_id;
@@ -145,7 +145,7 @@ public class VRTrainingRecorder : MonoBehaviour
         rawDataLog.Add(point);
     }
 
-    // --- LOGIKA BARU AGREGASI ---
+    // --- LOGIKA BARU AGREGASI (FINAL REVISI) ---
     void ProcessAndSaveAggregation()
     {
         if (rawDataLog.Count == 0) return;
@@ -166,39 +166,41 @@ public class VRTrainingRecorder : MonoBehaviour
         // 5. total_duration
         float total_duration = Time.time - startTime;
 
-        // --- 6. TASK COMPLETION RATE (REVISI) ---
-        // Logika: 
-        // a. Ambil semua data logging di mana confidence > threshold (misal 0.6).
-        // b. Ambil ID unik (detected_class) dari data tersebut.
-        //    Contoh: Jika terdeteksi Sampah(0), Sampah(0), Bantal(1) -> Unik: {0, 1}.
-        // c. Hitung jumlah ID uniknya. Jika semua 3 tugas terdeteksi, hasilnya 3.
+        // --- 6. TASK COMPLETION RATE ---
+        // Logika: Ambil ID unik yang confidence-nya tinggi, lalu bagi dengan Total Task (3).
         
-        var validDetections = rawDataLog
+        var validUniqueObjects = rawDataLog
             .Where(x => x.detected_conf >= validDetectionThreshold && x.detected_class != -1)
             .Select(x => x.detected_class)
-            .Distinct() // Hapus duplikat (supaya Bantal yg terdeteksi 100x tetap dihitung 1)
+            .Distinct() // Hapus duplikat (misal: Bantal, Bantal, Sampah -> jadi {Bantal, Sampah})
             .ToList();
 
-        float task_completion_rate = validDetections.Count; 
+        float uniqueCount = validUniqueObjects.Count; // Jumlah tugas selesai (0, 1, 2, atau 3)
+        float totalTasks = 3.0f; // Total task yang harus dikerjakan
 
-        // Debugging (Cek di Console apa saja yang terdeteksi)
-        string detectedIDs = string.Join(", ", validDetections);
-        Debug.Log($"[AGREGASI] Task Selesai: {task_completion_rate} (ID: {detectedIDs})");
+        // Rumus Normalisasi: (Jumlah Selesai / 3). 
+        // Hasilnya: 0.0, 0.33, 0.67, atau 1.0
+        float task_completion_rate = uniqueCount / totalTasks;
 
+        // Debugging di Console Unity
+        string detectedIDs = string.Join(", ", validUniqueObjects);
+        Debug.Log($"[AGREGASI] Selesai: {uniqueCount}/{totalTasks}. Rate: {task_completion_rate:F2} (Class ID: {detectedIDs})");
 
         // --- 7. TULIS KE CSV ---
         string filePath = Path.Combine(Application.persistentDataPath, "Session_Summary.csv");
-        bool fileExists = File.Exists(filePath);
+        
+        // Cek apakah perlu nulis header (jika file baru dibuat)
+        bool writeHeader = !File.Exists(filePath);
 
         using (StreamWriter writer = new StreamWriter(filePath, true))
         {
-            if (!fileExists)
+            if (writeHeader)
             {
-                // Header sesuai tabel
                 writer.WriteLine("session_id,current_level,avg_hand_velocity,max_hand_jerk,hesitation_time,focus_consistency,total_duration,task_completion_rate");
             }
 
-            string line = string.Format("{0},{1},{2:F4},{3:F4},{4:F2},{5:F4},{6:F2},{7:F0}", // F0 agar task_rate bulat (1, 2, 3)
+            // PERUBAHAN PENTING: Format {7:F2} agar angka desimal muncul (misal 0.67)
+            string line = string.Format("{0},{1},{2:F4},{3:F4},{4:F2},{5:F4},{6:F2},{7:F2}", 
                 session_id,
                 current_level,
                 avg_hand_velocity,
