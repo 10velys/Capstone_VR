@@ -13033,6 +13033,9 @@ MonoBehaviour:
   rightController: {fileID: 734948826}
   current_level: 1
   hesitationThreshold: 0.05
+  validDetectionThreshold: 0.2
+  current_detected_class: -1
+  current_detected_conf: 0
 --- !u!1 &1853498995
 GameObject:
   m_ObjectHideFlags: 0
@@ -14420,9 +14423,19 @@ MonoBehaviour:
   modelAsset: {fileID: 5022602860645237092, guid: 029294c29a5f8d04db480d0e5a15a94c, type: 3}
   inputTexture: {fileID: 8400000, guid: c2f8ec2dbcbd36649aeef5cc916590c2, type: 2}
   labels:
-  - Sampah
-  - Bantal
-  - Handuk
+  - bantal_rapih
+  - bantal_tidak_rapih
+  - selimut_rapih
+  - selimut_tidak_rapih
+  - sampah_tidak_rapih
+  - tempat_sampah
+  - sampah_rapih
+  - keranjang_kotor
+  - keranjang_bersih
+  - handuk_kotor
+  - handuk_bersih
+  - handuk_kotor_success
+  - handuk_bersih_success
   confidenceThreshold: 0.2
   iouThreshold: 0.4
   recorder: {fileID: 1851151130}

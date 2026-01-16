@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq; // Wajib ada untuk fungsi Distinct(), Count(), Average()
+using System.Linq;
 
 public class VRTrainingRecorder : MonoBehaviour
 {
@@ -12,45 +12,54 @@ public class VRTrainingRecorder : MonoBehaviour
     public Transform rightController;
 
     [Header("Session Settings")]
-    public int current_level = 1; 
-    public float hesitationThreshold = 0.05f; 
+    public int current_level = 1;
+    public float hesitationThreshold = 0.05f;
     
-    // Threshold minimal confidence agar dianggap tugas VALID selesai.
-    // PENTING: Atur nilai ini di Inspector Unity (misal: 0.5 atau 0.6)
-    public float validDetectionThreshold = 0.5f; 
+    public float validDetectionThreshold = 0.2f; 
 
-    // --- STATE VARIABLES ---
+    private readonly string[] classLabels = new string[]
+    {
+        "bantal_rapih",         // 0
+        "bantal_tidak_rapih",   // 1
+        "selimut_rapih",        // 2 
+        "selimut_tidak_rapih",  // 3 
+        "sampah_tidak_rapih",   // 4
+        "tempat_sampah",        // 5
+        "sampah_rapih",         // 6
+        "keranjang_kotor",      // 7
+        "keranjang_bersih",     // 8
+        "handuk_kotor",         // 9
+        "handuk_bersih",        // 10
+        "handuk_kotor_success", // 11
+        "handuk_bersih_success" // 12
+    };
+
+    public enum TaskCategory { None, Bedding, Trash, Towel }
+
     private string session_id;
     private bool isRecording = false;
     private float startTime;
     private float nextRecordTime = 0f;
 
-    // --- PHYSICS TEMP VARS ---
     private Vector3 lastHandPos;
-    private float currentVelInst; 
-    private float currentJerkInst; 
+    private float currentVelInst;
+    private float currentJerkInst;
     private Vector3 lastHandVel;
     private Vector3 lastHandAcc;
 
-    // --- YOLO INPUT (Updated by YoloDetector) ---
-    // Default -1 artinya tidak ada object terdeteksi
-    private int current_detected_class = -1; 
-    private float current_detected_conf = 0f;
+    public int current_detected_class = -1;
+    public float current_detected_conf = 0f;
 
-    // --- TEMPORARY RAW DATA STORAGE (IN MEMORY) ---
-    // Class untuk menyimpan snapshot data per detik (Data Logging)
-    private class RawDataPoint
-    {
+    private HashSet<TaskCategory> completedCategories = new HashSet<TaskCategory>();
+    private List<RawDataPoint> rawDataLog = new List<RawDataPoint>();
+    
+    private string debugLogPath;
+
+    private class RawDataPoint {
         public float hand_velocity_inst;
         public float hand_jerk_inst;
         public float head_pitch;
-        
-        // Kita butuh Class ID untuk tahu objek mana yang selesai (Bantal/Sampah/Handuk)
-        public int detected_class; 
-        public float detected_conf;
     }
-
-    private List<RawDataPoint> rawDataLog = new List<RawDataPoint>();
 
     void Awake()
     {
@@ -60,48 +69,42 @@ public class VRTrainingRecorder : MonoBehaviour
 
     public void StartRecording()
     {
-        // 1. Setup Session ID
         int sessionCounter = PlayerPrefs.GetInt("SessionCounter", 1);
         session_id = $"USER_{System.DateTime.Now:yyyyMMdd}_{sessionCounter:D3}";
         PlayerPrefs.SetInt("SessionCounter", sessionCounter + 1);
         PlayerPrefs.Save();
 
-        // 2. Reset State
-        rawDataLog.Clear(); 
+        debugLogPath = Path.Combine(Application.persistentDataPath, $"DEBUG_LOG_{session_id}.txt");
+        File.WriteAllText(debugLogPath, "TIMESTAMP | RAW ID | NAME | CONFIDENCE | RESULT\n");
+
+        rawDataLog.Clear();
+        completedCategories.Clear();
         isRecording = true;
         startTime = Time.time;
-        nextRecordTime = startTime; 
+        nextRecordTime = startTime;
 
-        // 3. Reset Physics
-        if (rightController != null)
-        {
+        if (rightController != null) {
             lastHandPos = rightController.position;
             lastHandVel = Vector3.zero;
             lastHandAcc = Vector3.zero;
         }
-
-        Debug.Log($"[RECORDER] Session {session_id} Started.");
+        
+        Debug.Log($"Recording Started. Log File: {debugLogPath}");
     }
 
     public void StopAndSave()
     {
         if (!isRecording) return;
         isRecording = false;
-
-        // Proses Agregasi Data dari Memory -> CSV
         ProcessAndSaveAggregation();
-
-        Debug.Log($"[RECORDER] Session Stopped. Aggregated Data Saved.");
     }
 
     void Update()
     {
         if (!isRecording || rightController == null) return;
 
-        // A. HITUNG FISIKA (Real-time per frame)
         float dt = Time.deltaTime;
-        if (dt > 0)
-        {
+        if (dt > 0) {
             Vector3 currentPos = rightController.position;
             Vector3 currentVel = (currentPos - lastHandPos) / dt;
             Vector3 currentAcc = (currentVel - lastHandVel) / dt;
@@ -115,102 +118,100 @@ public class VRTrainingRecorder : MonoBehaviour
             lastHandAcc = currentAcc;
         }
 
-        // B. DATA LOGGING (1 Detik Sekali - Disimpan di Memory Saja)
-        if (Time.time >= nextRecordTime)
+        if (current_detected_class >= 0 && current_detected_class < classLabels.Length)
         {
-            LogSnapshotInMemory();
-            nextRecordTime = Time.time + 1.0f; 
+            if (current_detected_conf >= validDetectionThreshold)
+            {
+                TaskCategory detectedCategory = MapIdToCategory(current_detected_class);
+                if (detectedCategory != TaskCategory.None)
+                {
+                    if (!completedCategories.Contains(detectedCategory))
+                    {
+                        completedCategories.Add(detectedCategory);
+                        AppendToDebugLog($"TASK COMPLETE: {detectedCategory}");
+                    }
+                }
+            }
         }
+
+        if (Time.time >= nextRecordTime) {
+            LogSnapshotInMemory();
+            nextRecordTime = Time.time + 1.0f;
+        }
+    }
+
+    TaskCategory MapIdToCategory(int id)
+    {
+        if (id >= 0 && id <= 3) return TaskCategory.Bedding;
+        
+        if (id >= 4 && id <= 6) return TaskCategory.Trash;
+        
+        if (id >= 7 && id <= 12) return TaskCategory.Towel;
+
+        return TaskCategory.None;
+    }
+
+    public void UpdateYoloData(int classIndex, float confidence)
+    {
+        this.current_detected_class = classIndex;
+        this.current_detected_conf = confidence;
+
+        if (isRecording && confidence > 0.1f && classIndex >= 0)
+        {
+            string name = (classIndex < classLabels.Length) ? classLabels[classIndex] : "Unknown";
+            TaskCategory category = MapIdToCategory(classIndex);
+            string status = (confidence >= validDetectionThreshold) ? "VALID" : "REJECTED (Low Conf)";
+            
+            string logLine = $"{Time.time - startTime:F1}s | {classIndex} | {name} | Category: {category} | {confidence:F2} | {status}";
+            AppendToDebugLog(logLine);
+            Debug.Log(logLine); // Tambahkan ini untuk melihat di Console
+        }
+    }
+
+    void AppendToDebugLog(string line)
+    {
+        try {
+            using (StreamWriter sw = File.AppendText(debugLogPath)) {
+                sw.WriteLine(line);
+            }
+        } catch {}
     }
 
     void LogSnapshotInMemory()
     {
-        float pitch = 0f;
-        if (headCamera != null)
-        {
-            pitch = headCamera.eulerAngles.x;
-            if (pitch > 180) pitch -= 360; 
-        }
-
-        RawDataPoint point = new RawDataPoint
-        {
+        float pitch = (headCamera != null) ? headCamera.eulerAngles.x : 0f;
+        if (pitch > 180) pitch -= 360;
+        rawDataLog.Add(new RawDataPoint {
             hand_velocity_inst = currentVelInst,
             hand_jerk_inst = currentJerkInst,
-            head_pitch = pitch,
-            // Simpan data YOLO saat ini (Data Logging)
-            detected_class = current_detected_class, 
-            detected_conf = current_detected_conf
-        };
-
-        rawDataLog.Add(point);
+            head_pitch = pitch
+        });
     }
 
-    // --- LOGIKA BARU AGREGASI (FINAL REVISI) ---
     void ProcessAndSaveAggregation()
     {
         if (rawDataLog.Count == 0) return;
 
-        // 1. avg_hand_velocity
         float avg_hand_velocity = rawDataLog.Average(x => x.hand_velocity_inst);
-
-        // 2. max_hand_jerk
         float max_hand_jerk = rawDataLog.Max(x => x.hand_jerk_inst);
-
-        // 3. hesitation_time
-        int hesitationCount = rawDataLog.Count(x => x.hand_velocity_inst < hesitationThreshold);
-        float hesitation_time = hesitationCount * 1.0f; 
-
-        // 4. focus_consistency
+        float hesitation_time = rawDataLog.Count(x => x.hand_velocity_inst < hesitationThreshold) * 1.0f;
         float focus_consistency = CalculateStdDev(rawDataLog.Select(x => x.head_pitch).ToList());
-
-        // 5. total_duration
         float total_duration = Time.time - startTime;
 
-        // --- 6. TASK COMPLETION RATE ---
-        // Logika: Ambil ID unik yang confidence-nya tinggi, lalu bagi dengan Total Task (3).
-        
-        var validUniqueObjects = rawDataLog
-            .Where(x => x.detected_conf >= validDetectionThreshold && x.detected_class != -1)
-            .Select(x => x.detected_class)
-            .Distinct() // Hapus duplikat (misal: Bantal, Bantal, Sampah -> jadi {Bantal, Sampah})
-            .ToList();
+        int task_bed   = completedCategories.Contains(TaskCategory.Bedding) ? 1 : 0;
+        int task_trash = completedCategories.Contains(TaskCategory.Trash)   ? 1 : 0;
+        int task_towel = completedCategories.Contains(TaskCategory.Towel)   ? 1 : 0;
 
-        float uniqueCount = validUniqueObjects.Count; // Jumlah tugas selesai (0, 1, 2, atau 3)
-        float totalTasks = 3.0f; // Total task yang harus dikerjakan
-
-        // Rumus Normalisasi: (Jumlah Selesai / 3). 
-        // Hasilnya: 0.0, 0.33, 0.67, atau 1.0
-        float task_completion_rate = uniqueCount / totalTasks;
-
-        // Debugging di Console Unity
-        string detectedIDs = string.Join(", ", validUniqueObjects);
-        Debug.Log($"[AGREGASI] Selesai: {uniqueCount}/{totalTasks}. Rate: {task_completion_rate:F2} (Class ID: {detectedIDs})");
-
-        // --- 7. TULIS KE CSV ---
         string filePath = Path.Combine(Application.persistentDataPath, "Session_Summary.csv");
-        
-        // Cek apakah perlu nulis header (jika file baru dibuat)
         bool writeHeader = !File.Exists(filePath);
 
         using (StreamWriter writer = new StreamWriter(filePath, true))
         {
-            if (writeHeader)
-            {
-                writer.WriteLine("session_id,current_level,avg_hand_velocity,max_hand_jerk,hesitation_time,focus_consistency,total_duration,task_completion_rate");
-            }
-
-            // PERUBAHAN PENTING: Format {7:F2} agar angka desimal muncul (misal 0.67)
-            string line = string.Format("{0},{1},{2:F4},{3:F4},{4:F2},{5:F4},{6:F2},{7:F2}", 
-                session_id,
-                current_level,
-                avg_hand_velocity,
-                max_hand_jerk,
-                hesitation_time,
-                focus_consistency,
-                total_duration,
-                task_completion_rate
-            );
-
+            if (writeHeader) writer.WriteLine("session_id,current_level,avg_hand_velocity,max_hand_jerk,hesitation_time,focus_consistency,total_duration,task_trash,task_bed,task_towel");
+            
+            string line = string.Format("{0},{1},{2:F4},{3:F4},{4:F2},{5:F4},{6:F2},{7},{8},{9}", 
+                session_id, current_level, avg_hand_velocity, max_hand_jerk, hesitation_time, focus_consistency, total_duration, 
+                task_trash, task_bed, task_towel);
             writer.WriteLine(line);
         }
     }
@@ -221,11 +222,5 @@ public class VRTrainingRecorder : MonoBehaviour
         float avg = values.Average();
         float sumSqDiff = values.Sum(d => (d - avg) * (d - avg));
         return Mathf.Sqrt(sumSqDiff / values.Count);
-    }
-
-    public void UpdateYoloData(int classIndex, float confidence)
-    {
-        this.current_detected_class = classIndex;
-        this.current_detected_conf = confidence;
     }
 }

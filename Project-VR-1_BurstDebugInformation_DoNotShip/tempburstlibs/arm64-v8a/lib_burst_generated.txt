@@ -1,4 +1,4 @@
-Library: C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\BurstOutput\tempburstlibs\arm64-v8a\lib_burst_generated
+Library: C:\Capstone_VR\Capstone_VR\Temp\BurstOutput\tempburstlibs\arm64-v8a\lib_burst_generated
 --platform=Android
 --minimum-os-version=
 --backend=burst-llvm-19
@@ -9,10 +9,10 @@ Library: C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\BurstOutput\tempburstlibs
 --float-precision=Standard
 --target-framework=NetFramework
 --generate-link-xml=Temp\burst.link.xml
---temp-folder=C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\Burst
+--temp-folder=C:\Capstone_VR\Capstone_VR\Temp\Burst
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.2.6f2/Editor/Data/PlaybackEngines/AndroidPlayer
---decode-folder=C:\Users\mulya\Project-VR-1\Project-VR-1\Library\Burst
---output=C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\BurstOutput\tempburstlibs\arm64-v8a\lib_burst_generated
+--decode-folder=C:\Capstone_VR\Capstone_VR\Library\Burst
+--output=C:\Capstone_VR\Capstone_VR\Temp\BurstOutput\tempburstlibs\arm64-v8a\lib_burst_generated
 --pdb-search-paths=Temp/ManagedSymbols/
 
 --method=Unity.Jobs.IJobExtensions+JobStruct`1[[UnityEngine.XR.Interaction.Toolkit.AffordanceSystem.Jobs.Float4TweenJob, Unity.XR.Interaction.Toolkit, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null::Execute(UnityEngine.XR.Interaction.Toolkit.AffordanceSystem.Jobs.Float4TweenJob&, Unity.XR.Interaction.Toolkit, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|System.IntPtr, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|System.IntPtr, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|Unity.Jobs.LowLevel.Unsafe.JobRanges&, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089)--34aec427743d7d01c0cb7a219c9fbe32
@@ -62,10 +62,10 @@ Library: C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\BurstOutput\tempburstlibs
 --float-precision=Standard
 --target-framework=NetFramework
 --generate-link-xml=Temp\burst.link.xml
---temp-folder=C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\Burst
+--temp-folder=C:\Capstone_VR\Capstone_VR\Temp\Burst
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.2.6f2/Editor/Data/PlaybackEngines/AndroidPlayer
---decode-folder=C:\Users\mulya\Project-VR-1\Project-VR-1\Library\Burst
---output=C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\BurstOutput\tempburstlibs\arm64-v8a\lib_burst_generated
+--decode-folder=C:\Capstone_VR\Capstone_VR\Library\Burst
+--output=C:\Capstone_VR\Capstone_VR\Temp\BurstOutput\tempburstlibs\arm64-v8a\lib_burst_generated
 --pdb-search-paths=Temp/ManagedSymbols/
 
 --method=Unity.Jobs.IJobParallelForExtensions+ParallelForJobStruct`1[[Unity.InferenceEngine.CPUBackend+ScatterElementsIntFastJob, Unity.InferenceEngine, Version=2.4.1.0, Culture=neutral, PublicKeyToken=null]], UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null::Execute(Unity.InferenceEngine.CPUBackend+ScatterElementsIntFastJob&, Unity.InferenceEngine, Version=2.4.1.0, Culture=neutral, PublicKeyToken=null|System.IntPtr, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|System.IntPtr, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|Unity.Jobs.LowLevel.Unsafe.JobRanges&, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089)--0625abccd0cd7e01ef8d8987c26a9711
@@ -179,10 +179,10 @@ Library: C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\BurstOutput\tempburstlibs
 --target-framework=NetFramework
 --float-mode=Fast
 --generate-link-xml=Temp\burst.link.xml
---temp-folder=C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\Burst
+--temp-folder=C:\Capstone_VR\Capstone_VR\Temp\Burst
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.2.6f2/Editor/Data/PlaybackEngines/AndroidPlayer
---decode-folder=C:\Users\mulya\Project-VR-1\Project-VR-1\Library\Burst
---output=C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\BurstOutput\tempburstlibs\arm64-v8a\lib_burst_generated
+--decode-folder=C:\Capstone_VR\Capstone_VR\Library\Burst
+--output=C:\Capstone_VR\Capstone_VR\Temp\BurstOutput\tempburstlibs\arm64-v8a\lib_burst_generated
 --pdb-search-paths=Temp/ManagedSymbols/
 
 --method=Unity.InferenceEngine.IParallelForBatchExtensions+ParallelForBatchJobStruct`1[[Unity.InferenceEngine.CPUBackend+CumSumFloatJob, Unity.InferenceEngine, Version=2.4.1.0, Culture=neutral, PublicKeyToken=null]], Unity.InferenceEngine, Version=2.4.1.0, Culture=neutral, PublicKeyToken=null::Execute(Unity.InferenceEngine.CPUBackend+CumSumFloatJob&, Unity.InferenceEngine, Version=2.4.1.0, Culture=neutral, PublicKeyToken=null|System.IntPtr, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|System.IntPtr, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|Unity.Jobs.LowLevel.Unsafe.JobRanges&, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089)--d0dc47f714cce3007d47378007a15d32
@@ -251,10 +251,10 @@ Library: C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\BurstOutput\tempburstlibs
 --float-precision=Standard
 --target-framework=NetFramework
 --generate-link-xml=Temp\burst.link.xml
---temp-folder=C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\Burst
+--temp-folder=C:\Capstone_VR\Capstone_VR\Temp\Burst
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.2.6f2/Editor/Data/PlaybackEngines/AndroidPlayer
---decode-folder=C:\Users\mulya\Project-VR-1\Project-VR-1\Library\Burst
---output=C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\BurstOutput\tempburstlibs\arm64-v8a\lib_burst_generated
+--decode-folder=C:\Capstone_VR\Capstone_VR\Library\Burst
+--output=C:\Capstone_VR\Capstone_VR\Temp\BurstOutput\tempburstlibs\arm64-v8a\lib_burst_generated
 --pdb-search-paths=Temp/ManagedSymbols/
 
 --method=UnityEngine.XR.Hands.Gestures.XRHandOrientationUtility, Unity.XR.Hands, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null::GetHandAxisDirection(Unity.Mathematics.float3&, Unity.Mathematics, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|UnityEngine.XR.Hands.Gestures.XRHandAxis, Unity.XR.Hands, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|Unity.Mathematics.quaternion&, Unity.Mathematics, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|System.Single, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089)--0ef4d50576f0f00022da4f79ae773f01
@@ -367,10 +367,10 @@ Library: C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\BurstOutput\tempburstlibs
 --float-precision=Standard
 --target-framework=NetFramework
 --generate-link-xml=Temp\burst.link.xml
---temp-folder=C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\Burst
+--temp-folder=C:\Capstone_VR\Capstone_VR\Temp\Burst
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.2.6f2/Editor/Data/PlaybackEngines/AndroidPlayer
---decode-folder=C:\Users\mulya\Project-VR-1\Project-VR-1\Library\Burst
---output=C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\BurstOutput\tempburstlibs\arm64-v8a\lib_burst_generated
+--decode-folder=C:\Capstone_VR\Capstone_VR\Library\Burst
+--output=C:\Capstone_VR\Capstone_VR\Temp\BurstOutput\tempburstlibs\arm64-v8a\lib_burst_generated
 --pdb-search-paths=Temp/ManagedSymbols/
 
 --method=Unity.InferenceEngine.IParallelForBatchExtensions+ParallelForBatchJobStruct`1[[Unity.InferenceEngine.CPUBackend+LogJob, Unity.InferenceEngine, Version=2.4.1.0, Culture=neutral, PublicKeyToken=null]], Unity.InferenceEngine, Version=2.4.1.0, Culture=neutral, PublicKeyToken=null::Execute(Unity.InferenceEngine.CPUBackend+LogJob&, Unity.InferenceEngine, Version=2.4.1.0, Culture=neutral, PublicKeyToken=null|System.IntPtr, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|System.IntPtr, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|Unity.Jobs.LowLevel.Unsafe.JobRanges&, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089)--5f9874c7339359006072fc0b8cb15177
@@ -484,10 +484,10 @@ Library: C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\BurstOutput\tempburstlibs
 --target-framework=NetFramework
 --float-mode=Fast
 --generate-link-xml=Temp\burst.link.xml
---temp-folder=C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\Burst
+--temp-folder=C:\Capstone_VR\Capstone_VR\Temp\Burst
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.2.6f2/Editor/Data/PlaybackEngines/AndroidPlayer
---decode-folder=C:\Users\mulya\Project-VR-1\Project-VR-1\Library\Burst
---output=C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\BurstOutput\tempburstlibs\arm64-v8a\lib_burst_generated
+--decode-folder=C:\Capstone_VR\Capstone_VR\Library\Burst
+--output=C:\Capstone_VR\Capstone_VR\Temp\BurstOutput\tempburstlibs\arm64-v8a\lib_burst_generated
 --pdb-search-paths=Temp/ManagedSymbols/
 
 --method=Unity.Jobs.IJobParallelForExtensions+ParallelForJobStruct`1[[Unity.InferenceEngine.CPUBackend+GlobalAverageVariancePoolJob, Unity.InferenceEngine, Version=2.4.1.0, Culture=neutral, PublicKeyToken=null]], UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null::Execute(Unity.InferenceEngine.CPUBackend+GlobalAverageVariancePoolJob&, Unity.InferenceEngine, Version=2.4.1.0, Culture=neutral, PublicKeyToken=null|System.IntPtr, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|System.IntPtr, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|Unity.Jobs.LowLevel.Unsafe.JobRanges&, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089)--1dab2593ba53bf4972bcfaad20187eed
@@ -501,10 +501,10 @@ Library: C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\BurstOutput\tempburstlibs
 --float-precision=Standard
 --target-framework=NetFramework
 --generate-link-xml=Temp\burst.link.xml
---temp-folder=C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\Burst
+--temp-folder=C:\Capstone_VR\Capstone_VR\Temp\Burst
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.2.6f2/Editor/Data/PlaybackEngines/AndroidPlayer
---decode-folder=C:\Users\mulya\Project-VR-1\Project-VR-1\Library\Burst
---output=C:\Users\mulya\Project-VR-1\Project-VR-1\Temp\BurstOutput\tempburstlibs\arm64-v8a\lib_burst_generated
+--decode-folder=C:\Capstone_VR\Capstone_VR\Library\Burst
+--output=C:\Capstone_VR\Capstone_VR\Temp\BurstOutput\tempburstlibs\arm64-v8a\lib_burst_generated
 --pdb-search-paths=Temp/ManagedSymbols/
 
 --method=Unity.InferenceEngine.CPUBackend+ConvJob, Unity.InferenceEngine, Version=2.4.1.0, Culture=neutral, PublicKeyToken=null::CanUseDepthwiseConvKernel(Unity.InferenceEngine.CPUBackend+ConvJob*, Unity.InferenceEngine, Version=2.4.1.0, Culture=neutral, PublicKeyToken=null)--7a32ccc1a75617febcb28bc0ac2057ce

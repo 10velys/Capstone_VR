@@ -1,5 +1,5 @@
 using UnityEngine;
-using Unity.InferenceEngine; // Namespace Paket 2.4.0
+using Unity.InferenceEngine;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,31 +8,32 @@ public class YoloDetector : MonoBehaviour
     [Header("Model Settings")]
     public ModelAsset modelAsset;
     public RenderTexture inputTexture; 
-    public string[] labels; 
+    public string[] labels;
 
     [Header("Inference Settings")]
-    [Range(0f, 1f)] public float confidenceThreshold = 0.5f;
+    [Range(0f, 1f)] public float confidenceThreshold = 0.20f; 
     [Range(0f, 1f)] public float iouThreshold = 0.4f;
 
     [Header("Integration")]
-    public VRTrainingRecorder recorder; // WAJIB DI-ASSIGN
+    public VRTrainingRecorder recorder; 
 
-    // Variables
     private Model runtimeModel;
     private Worker worker;
     private const int ImageSize = 640; 
+    
+    float timer = 0;
+    float detectionInterval = 0.1f; 
 
     void Start()
     {
-        if (modelAsset == null || inputTexture == null) return;
+        if (modelAsset == null || inputTexture == null)
+        {
+            Debug.LogError("YOLO ERROR: Model Asset atau Input Texture belum diassign di Inspector!");
+            return;
+        }
         runtimeModel = ModelLoader.Load(modelAsset);
         worker = new Worker(runtimeModel, BackendType.GPUCompute);
     }
-
-    // Jalankan inferensi lebih cepat dari recording (misal 0.2s)
-    // Supaya saat Recorder mengambil data di detik ke-1, datanya fresh.
-    float timer = 0;
-    float detectionInterval = 0.2f; 
 
     void Update()
     {
@@ -46,13 +47,36 @@ public class YoloDetector : MonoBehaviour
 
     void RunInference()
     {
-        if (worker == null) return;
+        if (worker == null || inputTexture == null) return;
 
         using var inputTensor = new Tensor<float>(new TensorShape(1, ImageSize, ImageSize, 3));
-        var transform = new TextureTransform(); 
-        TextureConverter.ToTensor(inputTexture, inputTensor, transform);
+
+        float aspect = (float)inputTexture.width / inputTexture.height;
+        Vector2 scale = Vector2.one;
+        Vector2 offset = Vector2.zero;
+
+        if (aspect > 1.0f) 
+        {
+            scale.x = 1.0f / aspect;
+            offset.x = (1.0f - scale.x) / 2.0f;
+        }
+        else 
+        {
+            scale.y = aspect;
+            offset.y = (1.0f - scale.y) / 2.0f;
+        }
+
+        RenderTexture croppedRT = RenderTexture.GetTemporary(ImageSize, ImageSize, 0, RenderTextureFormat.ARGB32);
+        
+        Graphics.Blit(inputTexture, croppedRT, scale, offset);
+
+        var transform = new TextureTransform();
+        transform.SetDimensions(ImageSize, ImageSize, 3);
+        TextureConverter.ToTensor(croppedRT, inputTensor, transform);
 
         worker.Schedule(inputTensor);
+
+        RenderTexture.ReleaseTemporary(croppedRT);
 
         var outputTensor = worker.PeekOutput() as Tensor<float>;
         if (outputTensor == null) return;
@@ -66,7 +90,7 @@ public class YoloDetector : MonoBehaviour
 
     void ProcessYoloOutput(float[] data)
     {
-        int numClasses = labels.Length;
+        int numClasses = labels.Length; 
         int numProposals = 8400; 
 
         List<Detection> detections = new List<Detection>();
@@ -107,21 +131,13 @@ public class YoloDetector : MonoBehaviour
 
         var finalDetections = DoNMS(detections);
 
-        // --- INTEGRASI KE RECORDER ---
         if (finalDetections.Count > 0)
         {
             Detection best = finalDetections[0];
-            if (recorder != null)
-            {
-                // Kirim ID Kelas dan Confidence Score ke Recorder
-                // Ini akan disimpan di variabel sementara di Recorder
-                // dan baru dicatat ke List saat timer Recorder (1 detik) berdetak.
-                recorder.UpdateYoloData(best.classId, best.score);
-            }
+            if (recorder != null) recorder.UpdateYoloData(best.classId, best.score);
         }
         else
         {
-            // Jika tidak ada deteksi, kirim -1 dan confidence 0
             if (recorder != null) recorder.UpdateYoloData(-1, 0f);
         }
     }
