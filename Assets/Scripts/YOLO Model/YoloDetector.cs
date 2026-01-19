@@ -11,9 +11,9 @@ public class YoloDetector : MonoBehaviour
     public string[] labels;
 
     [Header("Inference Settings")]
-    [Range(0f, 1f)] public float confidenceThreshold = 0.25f;
+    [Range(0f, 1f)] public float confidenceThreshold = 0.4f; // Naikkan threshold agar lebih ringan
     [Range(0f, 1f)] public float iouThreshold = 0.45f;
-    public float detectionInterval = 0.5f;
+    [Range(0.2f, 2.0f)] public float detectionInterval = 0.5f; // Range agar tidak bisa diset 0.1 di Inspector
 
     [Header("Integration")]
     public VRTrainingRecorder recorder;
@@ -21,8 +21,7 @@ public class YoloDetector : MonoBehaviour
     private Model runtimeModel;
     private Worker worker;
     
-    // Optimasi: Turunkan resolusi internal AI (tidak mempengaruhi visual user)
-    // 320px jauh lebih ringan dari 640px dan cukup untuk deteksi objek besar (kasur/sampah)
+    // Internal resolution (320px cukup untuk Quest)
     private const int ImageSize = 320; 
 
     private RenderTexture scaledRT;
@@ -31,81 +30,104 @@ public class YoloDetector : MonoBehaviour
     private List<Detection> cachedDetections;
     private List<Detection> finalDetections;
 
+    private bool isInitializationSuccess = false;
+
     void Start()
     {
+        // Validasi awal
         if (modelAsset == null || inputTexture == null)
         {
+            Debug.LogError("[YOLO] Model atau Input Texture belum dipasang!");
             this.enabled = false;
             return;
         }
 
-        runtimeModel = ModelLoader.Load(modelAsset);
-        worker = new Worker(runtimeModel, BackendType.GPUCompute);
+        try 
+        {
+            runtimeModel = ModelLoader.Load(modelAsset);
+            // Gunakan GPUCompute untuk Quest
+            worker = new Worker(runtimeModel, BackendType.GPUCompute);
 
-        // Alokasi memori di awal (Pooling) untuk mencegah lag saat main
-        scaledRT = new RenderTexture(ImageSize, ImageSize, 0, RenderTextureFormat.ARGB32);
-        
-        // Pre-allocate lists
-        cachedDetections = new List<Detection>(50);
-        finalDetections = new List<Detection>(50);
-        
-        // Pre-allocate buffer tensor (sesuaikan ukuran output model Anda)
-        // 8400 proposals * (4 box + classes)
-        int outputSize = 8400 * (4 + labels.Length);
-        cachedOutputData = new float[outputSize];
+            // Alokasi Memori Sekali Saja (Pooling)
+            scaledRT = new RenderTexture(ImageSize, ImageSize, 0, RenderTextureFormat.ARGB32);
+            cachedDetections = new List<Detection>(50);
+            finalDetections = new List<Detection>(50);
+            
+            // Output size: 8400 boxes * (4 coords + class probabilities)
+            int outputSize = 8400 * (4 + labels.Length);
+            cachedOutputData = new float[outputSize];
 
-        StartCoroutine(InferenceLoop());
+            isInitializationSuccess = true;
+            StartCoroutine(InferenceLoop());
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[YOLO] Error init: {e.Message}");
+        }
     }
 
     IEnumerator InferenceLoop()
     {
-        yield return new WaitForSeconds(1.0f);
+        // Tunggu 3 detik di awal agar game stabil dulu (rendering world selesai)
+        yield return new WaitForSeconds(3.0f);
+
+        WaitForSeconds waitInterval = new WaitForSeconds(detectionInterval);
 
         while (true)
         {
-            yield return StartCoroutine(RunInferenceRoutine());
-            yield return new WaitForSeconds(detectionInterval);
+            // DYNAMIC THROTTLING:
+            // Jika FPS sedang drop (lag), JANGAN jalankan AI. Prioritaskan kenyamanan mata user.
+            float currentFPS = 1.0f / Time.smoothDeltaTime;
+            if (currentFPS > 65.0f) // Hanya jalan jika FPS aman (di atas 65)
+            {
+                yield return StartCoroutine(RunInferenceRoutine());
+            }
+            else
+            {
+                // Jika lag, skip frame ini, coba lagi nanti
+                yield return null; 
+            }
+
+            // Gunakan interval variable agar update realtime jika diubah di inspector
+            yield return new WaitForSeconds(detectionInterval); 
         }
     }
 
     IEnumerator RunInferenceRoutine()
     {
-        if (worker == null || inputTexture == null) yield break;
+        if (!isInitializationSuccess) yield break;
 
-        // Step 1: Blit (Copy Texture)
+        // --- STEP 1: Copy & Resize Texture (Ringan) ---
         Graphics.Blit(inputTexture, scaledRT);
         
-        // Step 2: Convert to Tensor
-        // Kita dispose manual setiap frame untuk keamanan memori GPU, 
-        // tapi kita lakukan di frame terpisah
+        // --- STEP 2: Convert to Tensor (Lumayan Berat) ---
         inputTensor = new Tensor<float>(new TensorShape(1, 3, ImageSize, ImageSize));
         var transform = new TextureTransform();
         transform.SetDimensions(ImageSize, ImageSize, 3);
         TextureConverter.ToTensor(scaledRT, inputTensor, transform);
         
-        // Jeda 1 frame agar CPU bisa nafas
+        // Jeda 1 frame untuk memberi napas CPU
         yield return null; 
 
-        // Step 3: Schedule Worker
+        // --- STEP 3: GPU Execution (Berat di GPU) ---
         worker.Schedule(inputTensor);
-        inputTensor.Dispose(); // Langsung buang referensi tensor input
+        inputTensor.Dispose(); // Langsung buang reference
 
-        // Step 4: Tunggu GPU selesai (Non-blocking wait)
-        // Kita tunggu sampai GPU benar-benar idle
+        // Tunggu 1 frame lagi. Biarkan GPU bekerja sambil Unity render game.
         yield return null; 
 
-        // Step 5: Readback Output
+        // --- STEP 4: Readback (Paling Berat - Potensi Lag Disini) ---
         var outputTensor = worker.PeekOutput() as Tensor<float>;
         if (outputTensor == null) yield break;
 
-        // Download data ke array yang sudah disiapkan (Zero Allocation)
+        // Kita tarik data. Dengan yield return null sebelumnya, harapannya GPU sudah selesai.
         using var cpuTensor = outputTensor.ReadbackAndClone();
         var dataRef = cpuTensor.dataOnBackend.Download<float>(cpuTensor.shape.length);
         
-        // Copy manual ke cached array untuk menghindari pembuatan array baru
+        // Copy ke buffer kita
         Unity.Collections.NativeArray<float>.Copy(dataRef, cachedOutputData, cachedOutputData.Length);
         
-        // Step 6: Process Data (Di frame berikutnya lagi agar motion tetap smooth)
+        // --- STEP 5: Process Logic (Pindah ke frame berikutnya biar smooth) ---
         yield return null;
         ProcessYoloOutput(cachedOutputData);
     }
@@ -116,16 +138,17 @@ public class YoloDetector : MonoBehaviour
         int numClasses = labels.Length;
         int numProposals = 8400; 
 
+        // Loop optimized
         for (int i = 0; i < numProposals; i++)
         {
             float maxScore = 0f;
             int maxClassIndex = -1;
 
+            // Cari class dengan score tertinggi
             for (int c = 0; c < numClasses; c++)
             {
                 int index = ((4 + c) * numProposals) + i;
-                // Safety check array bounds
-                if (index >= data.Length) continue;
+                if (index >= data.Length) break;
 
                 float score = data[index];
                 if (score > maxScore)
@@ -142,21 +165,18 @@ public class YoloDetector : MonoBehaviour
                 float w = data[(2 * numProposals) + i];
                 float h = data[(3 * numProposals) + i];
 
-                float xMin = x - (w / 2);
-                float yMin = y - (h / 2);
-
-                // Reuse object detection jika memungkinkan, atau struct (disini new class ringan)
                 cachedDetections.Add(new Detection
                 {
                     classId = maxClassIndex,
                     score = maxScore,
-                    box = new Rect(xMin, yMin, w, h)
+                    box = new Rect(x - w/2, y - h/2, w, h)
                 });
             }
         }
 
         DoNMS(cachedDetections);
 
+        // Kirim data ke Recorder (Hanya jika ada deteksi valid)
         if (recorder != null && finalDetections.Count > 0)
         {
             foreach (var det in finalDetections)
@@ -169,6 +189,8 @@ public class YoloDetector : MonoBehaviour
     void DoNMS(List<Detection> inputDetections)
     {
         finalDetections.Clear();
+        if (inputDetections.Count == 0) return;
+
         inputDetections.Sort((a, b) => b.score.CompareTo(a.score));
 
         while (inputDetections.Count > 0)
