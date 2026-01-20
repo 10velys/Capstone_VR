@@ -128,18 +128,35 @@ public class GlobalRoomManager : MonoBehaviour
     public void OnTowelFinished()
     {
         Debug.Log(">>> ALL TASKS COMPLETED <<<");
+        
+        // 1. Matikan Interaksi Handuk & Hint
         if(towelManager) towelManager.ToggleInteraction(false);
         if(towelHintScript) towelHintScript.enabled = false;
         if(towelDiamondObj) towelDiamondObj.SetActive(false);
 
-        // 1. SAVE DATA
+        // 2. SAVE DATA (Tetap simpan data training)
         if (VRTrainingRecorder.Instance != null)
         {
             VRTrainingRecorder.Instance.StopAndSave(); 
         }
 
-        // 2. PINDAH LEVEL
-        StartCoroutine(LoadNextLevelRoutine());
+        // --- PERUBAHAN DI SINI ---
+        
+        // DULU: Langsung pindah scene otomatis
+        // StartCoroutine(LoadNextLevelRoutine()); 
+
+        // SEKARANG: Panggil Canvas "Level Complete" (Next/Restart)
+        VRLevelManager uiManager = FindObjectOfType<VRLevelManager>();
+        
+        if (uiManager != null)
+        {
+            Debug.Log("Memunculkan UI Level Complete...");
+            uiManager.ShowLevelCompleteUI();
+        }
+        else
+        {
+            Debug.LogError("VRLevelManager tidak ditemukan di scene! Pastikan GameManager ada.");
+        }
     }
 
     IEnumerator LoadNextLevelRoutine()
