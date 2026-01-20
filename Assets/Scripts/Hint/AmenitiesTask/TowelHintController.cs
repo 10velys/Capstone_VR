@@ -1,209 +1,81 @@
 using UnityEngine;
 
-
-
 public class TowelHintController : MonoBehaviour
-
 {
-
     [Header("Visual")]
-
     public GameObject hintDiamond;
-
     public Vector3 offset = new Vector3(0, 0.3f, 0);
 
-
-
     [Header("Referensi Objek")]
+    public Transform dirtyTowelTarget;
+    public Transform basketTarget;
+    public Transform cleanTowelTarget;
+    public Transform rackTarget;
 
-    public Transform dirtyTowelTarget;  // Handuk Kotor (Awal)
-
-    public Transform basketTarget;      // Target Handuk Kotor (Basket 2)
-
-    public Transform cleanTowelTarget;  // Handuk Bersih (di Basket 1)
-
-    public Transform rackTarget;        // Target Handuk Bersih (Heated Towel)
-
-
-
-    // State
-
-    // 0 = Fase Handuk Kotor
-
-    // 1 = Fase Handuk Bersih
-
-    // 2 = Selesai
-
-    private int currentStep = 0;
-
+    private int currentStep = 0; 
     private bool isHoldingTowel = false;
+    private int levelMode = 1;
 
-
+    public void SetLevel(int level) { levelMode = level; }
 
     void Update()
-
     {
-
         if (currentStep >= 2 || hintDiamond == null) return;
 
+        if (levelMode == 3)
+        {
+            if (hintDiamond.activeSelf) hintDiamond.SetActive(false);
+            return;
+        }
 
+        if (levelMode == 2 && isHoldingTowel)
+        {
+            if (hintDiamond.activeSelf) hintDiamond.SetActive(false);
+        }
+        else
+        {
+            if (!hintDiamond.activeSelf) hintDiamond.SetActive(true);
 
-        // 1. Tentukan Posisi
-
-        Vector3 targetPos = CalculatePosition();
-
-        hintDiamond.transform.position = targetPos;
-
-
-
-        // 2. Rotasi Horizontal
-
-        hintDiamond.transform.Rotate(0, 50f * Time.deltaTime, 0, Space.World);
-
+            Vector3 targetPos = CalculatePosition();
+            hintDiamond.transform.position = targetPos;
+            hintDiamond.transform.Rotate(0, 50f * Time.deltaTime, 0, Space.World);
+        }
     }
-
-
 
     Vector3 CalculatePosition()
-
     {
-
-        // --- FASE 1: HANDUK KOTOR ---
-
-        if (currentStep == 0)
-
+        if (currentStep == 0) // Kotor
         {
-
-            if (isHoldingTowel)
-
-            {
-
-                // Kalau sedang pegang handuk kotor -> Tunjuk Basket 2
-
-                return basketTarget.position + offset;
-
-            }
-
-            else
-
-            {
-
-                // Kalau belum pegang -> Tunjuk Handuk Kotor itu sendiri
-
-                if (dirtyTowelTarget != null)
-
-                    return dirtyTowelTarget.position + offset;
-
-            }
-
+            if (isHoldingTowel) return basketTarget.position + offset;
+            else if (dirtyTowelTarget != null) return dirtyTowelTarget.position + offset;
         }
-
-        // --- FASE 2: HANDUK BERSIH ---
-
-        else if (currentStep == 1)
-
+        else if (currentStep == 1) // Bersih
         {
-
-            if (isHoldingTowel)
-
-            {
-
-                // Kalau sedang pegang handuk bersih -> Tunjuk Rak
-
-                return rackTarget.position + offset;
-
-            }
-
-            else
-
-            {
-
-                // Kalau belum pegang -> Tunjuk Handuk Bersih
-
-                if (cleanTowelTarget != null)
-
-                    return cleanTowelTarget.position + offset;
-
-            }
-
+            if (isHoldingTowel) return rackTarget.position + offset;
+            else if (cleanTowelTarget != null) return cleanTowelTarget.position + offset;
         }
-
-
-
-        return hintDiamond.transform.position; // Fallback
-
+        return hintDiamond.transform.position; 
     }
-
-
-
-    // Dipanggil oleh Helper saat handuk di-grab
 
     public void OnTowelGrabbed(GameObject grabbedObj)
-
     {
-
-        // Cek apakah handuk yang dipegang sesuai dengan phase saat ini
-
-        if (currentStep == 0 && grabbedObj.transform == dirtyTowelTarget)
-
-        {
-
-            isHoldingTowel = true;
-
-        }
-
-        else if (currentStep == 1 && grabbedObj.transform == cleanTowelTarget)
-
-        {
-
-            isHoldingTowel = true;
-
-        }
-
+        // Cek Transform saja
+        if (currentStep == 0 && grabbedObj.transform == dirtyTowelTarget) isHoldingTowel = true;
+        else if (currentStep == 1 && grabbedObj.transform == cleanTowelTarget) isHoldingTowel = true;
     }
 
-
-
-    public void OnTowelDropped()
-
-    {
-
-        isHoldingTowel = false;
-
-    }
-
-
-
-    // Dipanggil oleh TowelTaskManager saat Handuk Kotor masuk Basket
+    public void OnTowelDropped() { isHoldingTowel = false; }
 
     public void OnDirtyTaskFinished()
-
     {
-
-        Debug.Log("Hint: Fase Dirty Selesai. Lanjut ke Clean.");
-
         isHoldingTowel = false;
-
-        currentStep = 1; // Pindah ke fase Handuk Bersih
-
+        currentStep = 1; 
     }
-
-
-
-    // Dipanggil oleh TowelTaskManager saat Handuk Bersih masuk Rak
 
     public void OnCleanTaskFinished()
-
     {
-
-        Debug.Log("Hint: Semua Selesai!");
-
         isHoldingTowel = false;
-
-        currentStep = 2; // Selesai
-
+        currentStep = 2; 
         hintDiamond.SetActive(false);
-
     }
-
 }

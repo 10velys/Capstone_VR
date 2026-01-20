@@ -12,19 +12,40 @@ public class TrashHintController : MonoBehaviour
     [Header("Posisi Offset")]
     public Vector3 offset = new Vector3(0, 0.3f, 0);
 
-    // Variable Internal
     private int currentTargetIndex = 0;
     private bool isHoldingTarget = false;
     private bool allCompleted = false;
+    
+    // Default Level 1
+    private int levelMode = 1; 
+
+    public void SetLevel(int level) { levelMode = level; }
 
     void Update()
     {
         if (allCompleted || hintDiamond == null) return;
 
-        // Posisi & Rotasi
-        Vector3 targetPos = GetCurrentTargetPosition();
-        hintDiamond.transform.position = targetPos;
-        hintDiamond.transform.Rotate(0, 50f * Time.deltaTime, 0, Space.World);
+        // LEVEL 3: MATI TOTAL
+        if (levelMode == 3)
+        {
+            if (hintDiamond.activeSelf) hintDiamond.SetActive(false);
+            return; 
+        }
+
+        // LEVEL 2: MATI SAAT PEGANG BARANG (Cari sendiri tong sampahnya)
+        if (levelMode == 2 && isHoldingTarget)
+        {
+            if (hintDiamond.activeSelf) hintDiamond.SetActive(false);
+        }
+        else
+        {
+            // LEVEL 1: SELALU NYALA
+            if (!hintDiamond.activeSelf) hintDiamond.SetActive(true);
+            
+            Vector3 targetPos = GetCurrentTargetPosition();
+            hintDiamond.transform.position = targetPos;
+            hintDiamond.transform.Rotate(0, 50f * Time.deltaTime, 0, Space.World);
+        }
     }
 
     Vector3 GetCurrentTargetPosition()
@@ -39,21 +60,21 @@ public class TrashHintController : MonoBehaviour
             Transform targetTrash = trashManager.trashPapers[currentTargetIndex];
             if (targetTrash != null) return targetTrash.position + offset;
         }
-
         return hintDiamond.transform.position;
     }
 
     public void OnTrashGrabbed(GameObject grabbedObj)
     {
         if (allCompleted) return;
-        if (currentTargetIndex >= trashManager.trashPapers.Length) return;
+        
+        // LEVEL 3: Semua kertas valid
+        if (levelMode == 3) { isHoldingTarget = true; return; }
 
-        Transform currentTarget = trashManager.trashPapers[currentTargetIndex];
-
-        // Cek apakah yang dipegang adalah target saat ini
-        if (grabbedObj.transform == currentTarget)
+        // LEVEL 1 & 2: Harus sesuai urutan index
+        if (currentTargetIndex < trashManager.trashPapers.Length)
         {
-            isHoldingTarget = true;
+            Transform currentTarget = trashManager.trashPapers[currentTargetIndex];
+            if (grabbedObj.transform == currentTarget) isHoldingTarget = true;
         }
     }
 
@@ -62,45 +83,35 @@ public class TrashHintController : MonoBehaviour
         isHoldingTarget = false;
     }
 
-    // --- LOGIC UTAMA (Update untuk Global Manager) ---
-    // Menerima parameter 'trashObj' dari BinLogic
     public void OnTaskSuccess(GameObject trashObj)
     {
-        // Safety Check
-        if (allCompleted || currentTargetIndex >= trashManager.trashPapers.Length) return;
+        if (allCompleted) return;
 
-        // Ambil Target Sampah yang SEHARUSNYA sekarang
-        Transform currentTarget = trashManager.trashPapers[currentTargetIndex];
+        bool isCorrect = false;
 
-        // VALIDASI: Apakah sampah yang masuk Bin adalah sampah target saat ini?
-        if (trashObj.transform == currentTarget)
+        // Validasi berdasarkan level
+        if (levelMode == 3) isCorrect = true; // Level 3: Asal masuk tong = benar
+        else
         {
-            Debug.Log($"Paper {currentTargetIndex + 1} Benar! Lanjut next.");
-
-            // 1. Reset status pegang
-            isHoldingTarget = false;
-
-            // 2. PENTING: Lapor ke TrashManager kalau 1 sampah sudah beres
-            // Ini akan memicu GlobalManager jika semua sampah habis
-            if (trashManager != null)
+            // Level 1 & 2: Cek urutan
+            if (currentTargetIndex < trashManager.trashPapers.Length)
             {
-                trashManager.CheckTrashProgress();
+                if (trashObj.transform == trashManager.trashPapers[currentTargetIndex]) isCorrect = true;
             }
+        }
 
-            // 3. Naikkan Index urutan hint
+        if (isCorrect)
+        {
+            isHoldingTarget = false;
+            if (trashManager != null) trashManager.CheckTrashProgress();
+
             currentTargetIndex++;
 
-            // 4. Cek apakah hint sudah tidak diperlukan lagi
             if (currentTargetIndex >= trashManager.trashPapers.Length)
             {
                 allCompleted = true;
                 hintDiamond.SetActive(false);
-                Debug.Log("SEMUA HINT SAMPAH SELESAI!");
             }
-        }
-        else
-        {
-            Debug.LogWarning("Sampah masuk, tapi bukan urutannya! Hint tidak berubah.");
         }
     }
 }

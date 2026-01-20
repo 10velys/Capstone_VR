@@ -1,11 +1,17 @@
 using UnityEngine;
 using System.Collections; 
+using UnityEngine.SceneManagement; // WAJIB ADA: Untuk pindah scene
 
 public class GlobalRoomManager : MonoBehaviour
 {
     [Header("Game Settings")]
-    [Tooltip("Isi dengan 1, 2, atau 3 sesuai Scene Level ini")]
-    [Range(1, 3)] public int currentLevelStage = 1; // Diganti namanya agar lebih jelas
+    [Tooltip("1 = Full Hint, 2 = No Drop Hint, 3 = Mastery (No Hint)")]
+    [Range(1, 3)] public int currentLevelStage = 1; 
+
+    [Header("Scene Management")]
+    // Pastikan nama ini SAMA PERSIS dengan nama file scene kamu di folder Project
+    public string level2SceneName = "VR Basic_Level 2";
+    public string level3SceneName = "VR Basic_Level 3";
 
     [Header("Managers")]
     public TrashManager trashManager;
@@ -24,36 +30,37 @@ public class GlobalRoomManager : MonoBehaviour
 
     private void Start()
     {
+        // Kirim Info Level ke Semua Hint Script saat game mulai
+        if(trashHintScript) trashHintScript.SetLevel(currentLevelStage);
+        if(bedHintScript) bedHintScript.SetLevel(currentLevelStage);
+        if(towelHintScript) towelHintScript.SetLevel(currentLevelStage);
+
         StartCoroutine(InitSequence());
     }
 
     IEnumerator InitSequence()
     {
-        Debug.Log("GlobalManager: Menunggu inisialisasi script lain...");
+        Debug.Log($"GlobalManager: Starting Level Mode {currentLevelStage}...");
         
         yield return new WaitForSeconds(0.1f);
-
-        Debug.Log("GlobalManager: Reset All Tasks...");
-        DisableAllTasks();
-
+        DisableAllTasks(); // Kunci semua interaksi di awal
         yield return new WaitForSeconds(1.0f);
-
         StartTrashTask();
     }
 
     void DisableAllTasks()
     {
-        // Matikan Interaksi
+        // Matikan Interaksi (Grab)
         if(trashManager) trashManager.ToggleInteraction(false);
         if(bedManager) bedManager.ToggleInteraction(false);
         if(towelManager) towelManager.ToggleInteraction(false);
 
-        // Matikan Hint Logic
+        // Matikan Logic Hint
         if(trashHintScript) trashHintScript.enabled = false;
         if(bedHintScript) bedHintScript.enabled = false;
         if(towelHintScript) towelHintScript.enabled = false;
 
-        // Matikan Visual
+        // Matikan Visual Hint
         if(trashDiamondObj) trashDiamondObj.SetActive(false);
         if(bedDiamondObj) bedDiamondObj.SetActive(false);
         if(towelDiamondObj) towelDiamondObj.SetActive(false);
@@ -64,26 +71,17 @@ public class GlobalRoomManager : MonoBehaviour
     {
         Debug.Log(">>> PHASE 1 STARTED: TRASH <<<");
         
-        // --- INTEGRASI RECORDER ---
+        // SETUP RECORDER
         if (VRTrainingRecorder.Instance != null)
         {
-            // 1. Kirim Info Level (1/2/3) ke Recorder untuk Data CSV
             VRTrainingRecorder.Instance.current_level = currentLevelStage;
-
-            // 2. Mulai Recording (Logic baru: Reset memori & Timer)
             VRTrainingRecorder.Instance.StartRecording();
         }
-        else
-        {
-            Debug.LogWarning("VRTrainingRecorder tidak ditemukan di Scene!");
-        }
-        // -------------------------
 
-        if(trashManager != null) 
-        {
-            trashManager.ToggleInteraction(true); 
-        }
+        // Buka Kunci Sampah
+        if(trashManager) trashManager.ToggleInteraction(true);
         
+        // Nyalakan Script Hint (Visualnya nanti diatur sendiri oleh script hint berdasarkan level)
         if(trashHintScript) trashHintScript.enabled = true;      
         if(trashDiamondObj) trashDiamondObj.SetActive(true);      
     }
@@ -92,7 +90,7 @@ public class GlobalRoomManager : MonoBehaviour
     {
         Debug.Log(">>> PHASE 1 COMPLETED <<<");
         
-        if(trashManager) trashManager.ToggleInteraction(false);
+        if(trashManager) trashManager.ToggleInteraction(false); // Kunci lagi sampah
         if(trashHintScript) trashHintScript.enabled = false;      
         if(trashDiamondObj) trashDiamondObj.SetActive(false);     
         
@@ -103,7 +101,7 @@ public class GlobalRoomManager : MonoBehaviour
     void StartBedTask()
     {
         Debug.Log(">>> PHASE 2 STARTED: BED <<<");
-        if(bedManager) bedManager.ToggleInteraction(true);
+        if(bedManager) bedManager.ToggleInteraction(true); // Buka kunci Bantal
         if(bedHintScript) bedHintScript.enabled = true;        
         if(bedDiamondObj) bedDiamondObj.SetActive(true);       
     }
@@ -122,7 +120,7 @@ public class GlobalRoomManager : MonoBehaviour
     void StartTowelTask()
     {
         Debug.Log(">>> PHASE 3 STARTED: TOWEL <<<");
-        if(towelManager) towelManager.ToggleInteraction(true);
+        if(towelManager) towelManager.ToggleInteraction(true); // Buka kunci Handuk
         if(towelHintScript) towelHintScript.enabled = true;      
         if(towelDiamondObj) towelDiamondObj.SetActive(true);     
     }
@@ -134,11 +132,33 @@ public class GlobalRoomManager : MonoBehaviour
         if(towelHintScript) towelHintScript.enabled = false;
         if(towelDiamondObj) towelDiamondObj.SetActive(false);
 
-        // --- STOP RECORDER & SAVE ---
+        // 1. SAVE DATA
         if (VRTrainingRecorder.Instance != null)
         {
-            // Panggil fungsi Save (Method ini otomatis melakukan kalkulasi agregasi & tulis CSV)
             VRTrainingRecorder.Instance.StopAndSave(); 
+        }
+
+        // 2. PINDAH LEVEL
+        StartCoroutine(LoadNextLevelRoutine());
+    }
+
+    IEnumerator LoadNextLevelRoutine()
+    {
+        Debug.Log("Level Selesai! Loading next scene...");
+        yield return new WaitForSeconds(4.0f); // Jeda 4 detik
+
+        if (currentLevelStage == 1)
+        {
+            SceneManager.LoadScene(level2SceneName);
+        }
+        else if (currentLevelStage == 2)
+        {
+            SceneManager.LoadScene(level3SceneName);
+        }
+        else 
+        {
+            Debug.Log("Game Tamat! (Level 3 Selesai)");
+            // Bisa isi Application.Quit() atau balik ke menu
         }
     }
 }

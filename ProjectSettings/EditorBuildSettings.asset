@@ -11,6 +11,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/VR Basic.unity
     guid: 431cfb1ebed9f5a4d8be1923d5167ee6
+  - enabled: 1
+    path: Assets/Scenes/VR Basic_Level 2.unity
+    guid: b38bc271b61b623449504be51b252bc4
+  - enabled: 1
+    path: Assets/Scenes/VR Basic_Level 3.unity
+    guid: 137b711fef9c31d418d60d347a1a8aaa
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: 041949bb83ad52a4f877ef96fd730c82, type: 2}
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
