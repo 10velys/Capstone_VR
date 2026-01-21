@@ -8,10 +8,10 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/LoginScene.unity
     guid: 928d352f6bb624b4d95144080bc7f9f7
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/VR Basic.unity
     guid: 431cfb1ebed9f5a4d8be1923d5167ee6
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/VR Basic_Level 2.unity
     guid: b38bc271b61b623449504be51b252bc4
   - enabled: 1

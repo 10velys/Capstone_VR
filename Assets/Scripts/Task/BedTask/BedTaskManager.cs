@@ -75,18 +75,94 @@ public class BedTaskManager : MonoBehaviour
    
     void RandomizePositions()
     {
+        StartCoroutine(SpawnPillowsSafely());
+    }
+
+    // FUNGSI BARU: Spawn dengan jeda dan pengecekan jarak
+    System.Collections.IEnumerator SpawnPillowsSafely()
+    {
+        // List untuk mencatat posisi yang sudah terpakai
+        System.Collections.Generic.List<Vector3> usedPositions = new System.Collections.Generic.List<Vector3>();
+        float minSafeDistance = 0.6f; // Jarak aman minimal antar bantal (sesuaikan dengan lebar bantal)
+
         foreach (var pillow in allPillows)
         {
             if (pillow == null) continue;
 
-            // Pindahkan bantal ke posisi berantakan
-            pillow.transform.position = GetRandomPositionInVirtualBox(pillowMessyCenterOffset, pillowMessySize);
-           
-            // Acak rotasi
+            Rigidbody rb = pillow.GetComponent<Rigidbody>();
+            
+            // 1. MATIKAN TOTAL FISIKA DAN COLLIDER
+            // Agar saat dipindah, bantal jadi "hantu" (tembus pandang secara fisika)
+            if (rb != null)
+            {
+                rb.isKinematic = true; 
+                rb.detectCollisions = false; 
+                rb.collisionDetectionMode = CollisionDetectionMode.Discrete; // Mode aman
+            }
+
+            // 2. CARI POSISI KOSONG (Maksimal 10x percobaan agar tidak infinite loop)
+            Vector3 finalPos = Vector3.zero;
+            bool positionFound = false;
+            int attempts = 0;
+
+            while (!positionFound && attempts < 10)
+            {
+                Vector3 candidatePos = GetRandomPositionInVirtualBox(pillowMessyCenterOffset, pillowMessySize);
+                
+                // Pastikan Y selalu cukup tinggi (Jatuh dari udara)
+                // Kita kunci Y-nya agar seragam tingginya saat spawn
+                candidatePos.y = transform.position.y + pillowMessyCenterOffset.y; 
+
+                // Cek apakah terlalu dekat dengan bantal lain yang sudah spawn?
+                bool overlap = false;
+                foreach (Vector3 existingPos in usedPositions)
+                {
+                    if (Vector3.Distance(candidatePos, existingPos) < minSafeDistance)
+                    {
+                        overlap = true;
+                        break;
+                    }
+                }
+
+                if (!overlap)
+                {
+                    finalPos = candidatePos;
+                    positionFound = true;
+                }
+                attempts++;
+            }
+
+            // Jika setelah 10x coba gagal cari tempat (sempit), paksa pakai posisi terakhir
+            if (!positionFound) finalPos = GetRandomPositionInVirtualBox(pillowMessyCenterOffset, pillowMessySize);
+
+            // Simpan posisi
+            usedPositions.Add(finalPos);
+            pillow.transform.position = finalPos;
+
+            // 3. ACAK ROTASI (Batasi Tilt agar bantal tidak berdiri/menancap tajam)
             float pillowY_Rotation = Random.Range(0f, 360f);
-            float pillowX_Tilt = Random.Range(-maxMessyTilt, maxMessyTilt);
-            float pillowZ_Tilt = Random.Range(-maxMessyTilt, maxMessyTilt);
+            float safeTilt = 10f; // Jangan terlalu miring (sebelumnya maxMessyTilt mungkin terlalu besar)
+            float pillowX_Tilt = Random.Range(-safeTilt, safeTilt);
+            float pillowZ_Tilt = Random.Range(-safeTilt, safeTilt);
+            
             pillow.transform.rotation = Quaternion.Euler(pillowX_Tilt, pillowY_Rotation, pillowZ_Tilt);
+        }
+
+        // 4. STEP CRUSIAL: TUNGGU SEBENTAR (1 FRAME)
+        // Biarkan Unity memproses posisi baru dulu sebelum menyalakan fisika
+        yield return new WaitForEndOfFrame();
+
+        // 5. NYALAKAN FISIKA SATU PER SATU
+        foreach (var pillow in allPillows)
+        {
+            Rigidbody rb = pillow.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.detectCollisions = true;
+                rb.isKinematic = false; // Biarkan gravitasi bekerja (Bantal jatuh ke kasur)
+                // Tetap di Discrete dulu biar stabil saat jatuh
+                rb.collisionDetectionMode = CollisionDetectionMode.Discrete; 
+            }
         }
     }
 

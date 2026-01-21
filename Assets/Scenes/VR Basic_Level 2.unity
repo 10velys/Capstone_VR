@@ -3001,7 +3001,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &425218538
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3009,7 +3009,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 425218537}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6e7b2d4aa1af2864ea363e5caae2d8d0, type: 3}
   m_Name: 
@@ -6845,6 +6845,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6232745470614056090, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+      propertyPath: m_StepOffset
+      value: 0.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 6232745470614056090, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_MinMoveDistance
       value: 0
       objectReference: {fileID: 0}
@@ -10440,8 +10444,8 @@ MonoBehaviour:
   - {fileID: 490240825}
   - {fileID: 532836861}
   pillowMessyCenterOffset: {x: 1, y: 0.8, z: 0.2}
-  pillowMessySize: {x: 2.5, y: 0.2, z: 2.5}
-  maxMessyTilt: 20
+  pillowMessySize: {x: 3, y: 0.2, z: 2.5}
+  maxMessyTilt: 10
   placementPrecision: 0.1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
