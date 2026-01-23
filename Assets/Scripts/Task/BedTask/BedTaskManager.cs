@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
-// using UnityEngine.XR.Interaction.Toolkit.Interactables; // Uncomment baris ini jika pakai Unity 6
+// Sesuaikan namespace ini jika error. Di Unity 6 biasanya perlu:
+// using UnityEngine.XR.Interaction.Toolkit.Interactables; 
 
 // --- PENTING: Enum ini harus ada di luar class ---
 public enum BedTaskState
@@ -12,7 +13,7 @@ public enum BedTaskState
 public class BedTaskManager : MonoBehaviour
 {
     [Header("Global Manager")]
-    public GlobalRoomManager globalManager; // <--- REFERENSI KE GLOBAL
+    public GlobalRoomManager globalManager;
 
     [Header("Hint System")]
     public BedHintController hintController;
@@ -21,13 +22,13 @@ public class BedTaskManager : MonoBehaviour
     public BedTaskState currentState;
 
     [Header("Task Objects (Interactables)")]
+    // Menggunakan full namespace agar aman
     public UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable pillow1;
     public UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable pillow2;
     public UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable pillow3;
     public UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable pillow4;
 
     [Header("Task Zones (Triggers)")]
-    // PENTING: Zone ini harus ditaruh di posisi RAPIH (posisi final)
     public Collider[] pillowTargetZones;
 
     [Header("Randomization Area")]
@@ -53,37 +54,73 @@ public class BedTaskManager : MonoBehaviour
         }
        
         // Acak posisi bantal saat mulai
-        RandomizePositions();
+        StartCoroutine(SpawnPillowsSafely());
         InitializePillowTask();
 
-        // PENTING: Matikan interaksi di awal (karena harus menunggu Task Sampah selesai)
-        // GlobalManager yang akan menyalakannya nanti.
+        // Matikan interaksi di awal (menunggu Task Sampah selesai)
         ToggleInteraction(false);
     }
 
-    // Fungsi untuk menyalakan/mematikan interaksi (Dipanggil oleh GlobalManager)
+    // --- FUNGSI SAFETY NET BARU (PENTING) ---
+    void FixedUpdate()
+    {
+        // Hanya cek jika sedang dalam fase merapikan bantal
+        if (currentState != BedTaskState.TidyPillows) return;
+
+        foreach (var pillow in allPillows)
+        {
+            if (pillow != null && pillow.enabled) // Cek hanya jika bantal aktif
+            {
+                // Jika posisi Y bantal di bawah -2 (jatuh ke lantai/void)
+                // Sesuaikan angka -2f ini dengan ketinggian lantai scene Anda
+                if (pillow.transform.position.y < -2f)
+                {
+                    Debug.LogWarning($"Bantal {pillow.name} jatuh ke void! Respawning...");
+                    RespawnSinglePillow(pillow);
+                }
+            }
+        }
+    }
+
+    void RespawnSinglePillow(UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable pillow)
+    {
+        Rigidbody rb = pillow.GetComponent<Rigidbody>();
+        if(rb)
+        {
+            rb.linearVelocity = Vector3.zero; // Unity 6 pakai linearVelocity
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true; // Matikan fisika sejenak
+        }
+
+        // Reset posisi ke atas kasur (posisi aman)
+        // Menggunakan posisi transform manager + offset + sedikit ke atas
+        Vector3 safePos = transform.position + pillowMessyCenterOffset + (Vector3.up * 0.5f);
+        pillow.transform.position = safePos;
+        pillow.transform.rotation = Quaternion.identity;
+
+        if(rb)
+        {
+            rb.isKinematic = false; // Nyalakan fisika lagi
+        }
+    }
+    // ----------------------------------------
+
     public void ToggleInteraction(bool state)
     {
         foreach (var pillow in allPillows)
         {
             if (pillow != null)
             {
-                pillow.enabled = state; // Matikan/Nyalakan script grab
+                pillow.enabled = state; 
             }
         }
     }
    
-    void RandomizePositions()
-    {
-        StartCoroutine(SpawnPillowsSafely());
-    }
-
-    // FUNGSI BARU: Spawn dengan jeda dan pengecekan jarak
+    // --- LOGIC SPAWN YANG DIPERBAIKI ---
     System.Collections.IEnumerator SpawnPillowsSafely()
     {
-        // List untuk mencatat posisi yang sudah terpakai
         System.Collections.Generic.List<Vector3> usedPositions = new System.Collections.Generic.List<Vector3>();
-        float minSafeDistance = 0.6f; // Jarak aman minimal antar bantal (sesuaikan dengan lebar bantal)
+        float minSafeDistance = 0.5f; // Jarak aman antar bantal
 
         foreach (var pillow in allPillows)
         {
@@ -91,29 +128,28 @@ public class BedTaskManager : MonoBehaviour
 
             Rigidbody rb = pillow.GetComponent<Rigidbody>();
             
-            // 1. MATIKAN TOTAL FISIKA DAN COLLIDER
-            // Agar saat dipindah, bantal jadi "hantu" (tembus pandang secara fisika)
+            // 1. Matikan total fisika agar tidak meledak saat dipindah
             if (rb != null)
             {
                 rb.isKinematic = true; 
                 rb.detectCollisions = false; 
-                rb.collisionDetectionMode = CollisionDetectionMode.Discrete; // Mode aman
+                // Ganti mode collision biar tidak tembus tembok
+                rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
             }
 
-            // 2. CARI POSISI KOSONG (Maksimal 10x percobaan agar tidak infinite loop)
+            // 2. Cari posisi aman
             Vector3 finalPos = Vector3.zero;
             bool positionFound = false;
             int attempts = 0;
 
-            while (!positionFound && attempts < 10)
+            while (!positionFound && attempts < 15)
             {
                 Vector3 candidatePos = GetRandomPositionInVirtualBox(pillowMessyCenterOffset, pillowMessySize);
                 
-                // Pastikan Y selalu cukup tinggi (Jatuh dari udara)
-                // Kita kunci Y-nya agar seragam tingginya saat spawn
-                candidatePos.y = transform.position.y + pillowMessyCenterOffset.y; 
+                // [FIX] Tambahkan 0.4f ke atas (Y) agar bantal spawn DI UDARA, bukan di dalam kasur
+                candidatePos.y = transform.position.y + pillowMessyCenterOffset.y + 0.4f; 
 
-                // Cek apakah terlalu dekat dengan bantal lain yang sudah spawn?
+                // Cek jarak dengan bantal lain
                 bool overlap = false;
                 foreach (Vector3 existingPos in usedPositions)
                 {
@@ -132,36 +168,32 @@ public class BedTaskManager : MonoBehaviour
                 attempts++;
             }
 
-            // Jika setelah 10x coba gagal cari tempat (sempit), paksa pakai posisi terakhir
-            if (!positionFound) finalPos = GetRandomPositionInVirtualBox(pillowMessyCenterOffset, pillowMessySize);
+            // Fallback jika tidak nemu posisi
+            if (!positionFound) 
+            {
+                finalPos = transform.position + pillowMessyCenterOffset + (Vector3.up * 0.5f);
+            }
 
-            // Simpan posisi
             usedPositions.Add(finalPos);
             pillow.transform.position = finalPos;
 
-            // 3. ACAK ROTASI (Batasi Tilt agar bantal tidak berdiri/menancap tajam)
+            // 3. Acak Rotasi (Safe Tilt)
             float pillowY_Rotation = Random.Range(0f, 360f);
-            float safeTilt = 10f; // Jangan terlalu miring (sebelumnya maxMessyTilt mungkin terlalu besar)
-            float pillowX_Tilt = Random.Range(-safeTilt, safeTilt);
-            float pillowZ_Tilt = Random.Range(-safeTilt, safeTilt);
-            
-            pillow.transform.rotation = Quaternion.Euler(pillowX_Tilt, pillowY_Rotation, pillowZ_Tilt);
+            float safeTilt = 5f; // Tilt kecil saja biar stabil
+            pillow.transform.rotation = Quaternion.Euler(Random.Range(-safeTilt, safeTilt), pillowY_Rotation, Random.Range(-safeTilt, safeTilt));
         }
 
-        // 4. STEP CRUSIAL: TUNGGU SEBENTAR (1 FRAME)
-        // Biarkan Unity memproses posisi baru dulu sebelum menyalakan fisika
-        yield return new WaitForEndOfFrame();
+        // 4. [FIX] Tunggu 0.2 detik (bukan 1 frame) agar posisi benar-benar set
+        yield return new WaitForSeconds(0.2f);
 
-        // 5. NYALAKAN FISIKA SATU PER SATU
+        // 5. Nyalakan fisika kembali
         foreach (var pillow in allPillows)
         {
             Rigidbody rb = pillow.GetComponent<Rigidbody>();
             if (rb != null)
             {
                 rb.detectCollisions = true;
-                rb.isKinematic = false; // Biarkan gravitasi bekerja (Bantal jatuh ke kasur)
-                // Tetap di Discrete dulu biar stabil saat jatuh
-                rb.collisionDetectionMode = CollisionDetectionMode.Discrete; 
+                rb.isKinematic = false; // Biarkan jatuh ke kasur
             }
         }
     }
@@ -187,7 +219,6 @@ public class BedTaskManager : MonoBehaviour
         {
             if (pillow != null)
             {
-                // Listener tetap dipasang, tapi tidak akan jalan kalau component disabled
                 pillow.selectExited.AddListener(CheckPillowPlacement);
             }
         }
@@ -204,11 +235,9 @@ public class BedTaskManager : MonoBehaviour
                 Collider pillowCollider = allPillows[i].GetComponent<Collider>();
                 Collider zoneCollider = pillowTargetZones[i];
 
-                // Cek Jarak & Overlap
                 bool isOverlapping = zoneCollider.bounds.Intersects(pillowCollider.bounds);
                 float centerDistance = Vector3.Distance(pillowCollider.bounds.center, zoneCollider.bounds.center);
 
-                // Jika sudah cukup dekat
                 if (isOverlapping && centerDistance <= placementPrecision)
                 {
                     Debug.Log("Bantal " + (i + 1) + " Snapped!");
@@ -217,20 +246,17 @@ public class BedTaskManager : MonoBehaviour
                     allPillows[i].transform.position = zoneCollider.transform.position;
                     allPillows[i].transform.rotation = zoneCollider.transform.rotation;
                    
-                    // Matikan Physics biar diem
                     Rigidbody rb = allPillows[i].GetComponent<Rigidbody>();
                     if(rb)
                     {
                         rb.isKinematic = true;
-                        rb.linearVelocity = Vector3.zero;
+                        rb.linearVelocity = Vector3.zero; // Unity 6
                         rb.angularVelocity = Vector3.zero;
                     }
 
-                    // Kunci status
                     pillowIsPlaced[i] = true;
                     LockPillow(allPillows[i]);
 
-                    // --- UPDATE HINT ---
                     if (hintController != null)
                     {
                         hintController.OnPillowPlacedSuccess(i);
@@ -239,15 +265,12 @@ public class BedTaskManager : MonoBehaviour
             }
         }
 
-        // Cek Win Condition (Apakah semua bantal sudah terpasang?)
         int successCount = 0;
         foreach(bool placed in pillowIsPlaced) if(placed) successCount++;
        
         if (successCount == allPillows.Length)
         {
             CompletePillowTask();
-
-            // TAMBAHAN: Lapor ke Global Manager agar lanjut ke Task Handuk
             if(globalManager != null) 
             {
                 globalManager.OnBedFinished();
@@ -257,7 +280,6 @@ public class BedTaskManager : MonoBehaviour
 
     void LockPillow(UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable pillow)
     {
-        // Matikan kemampuan grab agar bantal terkunci
         pillow.enabled = false;
         pillow.selectExited.RemoveListener(CheckPillowPlacement);
     }
