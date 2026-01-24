@@ -4,7 +4,7 @@ public class FollowHead : MonoBehaviour
 {
     [Header("Settings")]
     public Transform headCamera;    // Masukkan Main Camera di sini
-    public float distance = 2.0f;   // Jarak menu dari mata (meter)
+    public float distance = 1.0f;   // Jarak menu dari mata (meter)
     public float smoothSpeed = 5.0f; // Semakin kecil = makin lambat/mulus. Semakin besar = makin cepat nempel.
 
     void LateUpdate() // LateUpdate bagus untuk UI agar tidak bergetar mengikuti kamera
