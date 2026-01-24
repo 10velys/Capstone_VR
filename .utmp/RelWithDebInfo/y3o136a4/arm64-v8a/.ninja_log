@@ -1,10 +1,19 @@
 # ninja log v5
+6968	7444	7905363375740060	C:/Capstone_VR/Capstone_VR/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/y3o136a4/obj/arm64-v8a/libgame.so	9c46ed3c74ea97c9
 76	5542	7905363356601972	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	a5dcc4a5bca64145
 100	5590	7905363356793386	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	1b7babd804b39765
-149	5755	7905363358570375	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	56f6c3ab39a41836
-29	5821	7905363359154008	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	738839f80399daec
 2	6004	7905363361142708	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	893eedfb3a22bfc3
+149	5755	7905363358570375	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	56f6c3ab39a41836
 226	6525	7905363366574252	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	f994a8e5d37ef55f
+29	5821	7905363359154008	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	738839f80399daec
 124	6636	7905363367628255	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	5eba8acec7693183
 51	6967	7905363370959844	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	1e4fa2430b7afffe
-6968	7444	7905363375740060	C:/Capstone_VR/Capstone_VR/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/y3o136a4/obj/arm64-v8a/libgame.so	9c46ed3c74ea97c9
+155	17016	7909466991033271	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	a5dcc4a5bca64145
+260	17024	7909466991028159	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	1b7babd804b39765
+180	17029	7909466991068589	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	738839f80399daec
+245	17038	7909466991588735	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	56f6c3ab39a41836
+205	17054	7909466991747173	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	893eedfb3a22bfc3
+225	17501	7909466996132859	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	5eba8acec7693183
+59	17691	7909466998035889	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	1e4fa2430b7afffe
+273	17768	7909466998704056	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	f994a8e5d37ef55f
+17770	18579	7909467006942190	C:/Capstone_VR/Capstone_VR/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/y3o136a4/obj/arm64-v8a/libgame.so	9c46ed3c74ea97c9
