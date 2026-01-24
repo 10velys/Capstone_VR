@@ -1,9 +1,9 @@
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
-// Sesuaikan namespace ini jika error. Di Unity 6 biasanya perlu:
-// using UnityEngine.XR.Interaction.Toolkit.Interactables; 
+using System.Collections;
+using System.Collections.Generic;
 
-// --- PENTING: Enum ini harus ada di luar class ---
+// Enum tetap di luar class
 public enum BedTaskState
 {
     TidyPillows,
@@ -22,7 +22,7 @@ public class BedTaskManager : MonoBehaviour
     public BedTaskState currentState;
 
     [Header("Task Objects (Interactables)")]
-    // Menggunakan full namespace agar aman
+    // Unity 6 Namespace
     public UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable pillow1;
     public UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable pillow2;
     public UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable pillow3;
@@ -39,43 +39,55 @@ public class BedTaskManager : MonoBehaviour
    
     [Header("Task Settings")]
     public float placementPrecision = 0.4f;
+    
+    [Header("Safety Settings")]
+    public float maxDistanceFromBed = 3.0f; // Jarak maksimal bantal boleh berada dari kasur
 
     private UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable[] allPillows;
     private bool[] pillowIsPlaced;
 
     void Start()
     {
-        // Inisialisasi Array Bantal
         allPillows = new UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable[] { pillow1, pillow2, pillow3, pillow4 };
 
-        if (allPillows.Length != pillowTargetZones.Length)
-        {
-            Debug.LogError("Setup Error: Jumlah bantal dan zona target tidak sama!");
-        }
+        if (allPillows.Length != pillowTargetZones.Length) Debug.LogError("Setup Error: Jumlah bantal tidak sesuai!");
        
-        // Acak posisi bantal saat mulai
         StartCoroutine(SpawnPillowsSafely());
         InitializePillowTask();
-
-        // Matikan interaksi di awal (menunggu Task Sampah selesai)
+        
+        // Memanggil fungsi ToggleInteraction agar user tidak bisa grab sebelum waktunya
         ToggleInteraction(false);
     }
 
-    // --- FUNGSI SAFETY NET BARU (PENTING) ---
+    // --- FUNGSI YANG HILANG SEBELUMNYA (DITAMBAHKAN KEMBALI) ---
+    public void ToggleInteraction(bool state)
+    {
+        foreach (var pillow in allPillows)
+        {
+            if (pillow != null)
+            {
+                // Mengaktifkan/menonaktifkan komponen interaksi agar bisa/tidak bisa dipegang
+                pillow.enabled = state; 
+            }
+        }
+    }
+    // -----------------------------------------------------------
+
+    // --- SAFETY NET YANG LEBIH KUAT ---
     void FixedUpdate()
     {
-        // Hanya cek jika sedang dalam fase merapikan bantal
         if (currentState != BedTaskState.TidyPillows) return;
 
         foreach (var pillow in allPillows)
         {
-            if (pillow != null && pillow.enabled) // Cek hanya jika bantal aktif
+            if (pillow != null && pillow.enabled)
             {
-                // Jika posisi Y bantal di bawah -2 (jatuh ke lantai/void)
-                // Sesuaikan angka -2f ini dengan ketinggian lantai scene Anda
-                if (pillow.transform.position.y < -2f)
+                // Cek Jarak Absolute dari titik pusat Bed Manager
+                float dist = Vector3.Distance(transform.position + pillowMessyCenterOffset, pillow.transform.position);
+                
+                if (dist > maxDistanceFromBed) 
                 {
-                    Debug.LogWarning($"Bantal {pillow.name} jatuh ke void! Respawning...");
+                    Debug.LogWarning($"Bantal {pillow.name} mental terlalu jauh ({dist}m)! Respawning...");
                     RespawnSinglePillow(pillow);
                 }
             }
@@ -87,80 +99,67 @@ public class BedTaskManager : MonoBehaviour
         Rigidbody rb = pillow.GetComponent<Rigidbody>();
         if(rb)
         {
-            rb.linearVelocity = Vector3.zero; // Unity 6 pakai linearVelocity
+            rb.linearVelocity = Vector3.zero; 
             rb.angularVelocity = Vector3.zero;
-            rb.isKinematic = true; // Matikan fisika sejenak
+            rb.isKinematic = true; 
         }
 
-        // Reset posisi ke atas kasur (posisi aman)
-        // Menggunakan posisi transform manager + offset + sedikit ke atas
-        Vector3 safePos = transform.position + pillowMessyCenterOffset + (Vector3.up * 0.5f);
+        // Respawn di posisi aman (sedikit di atas area acak)
+        Vector3 safePos = transform.position + pillowMessyCenterOffset + (Vector3.up * 0.6f); 
         pillow.transform.position = safePos;
         pillow.transform.rotation = Quaternion.identity;
 
-        if(rb)
-        {
-            rb.isKinematic = false; // Nyalakan fisika lagi
-        }
+        StartCoroutine(GentlyDropPillow(rb));
     }
-    // ----------------------------------------
 
-    public void ToggleInteraction(bool state)
+    // --- LOGIC SPAWN ANTI LEDAK ---
+    IEnumerator SpawnPillowsSafely()
     {
+        // 1. Matikan dulu semua bantal
         foreach (var pillow in allPillows)
         {
-            if (pillow != null)
+            if (pillow == null) continue;
+            Rigidbody rb = pillow.GetComponent<Rigidbody>();
+            if (rb != null)
             {
-                pillow.enabled = state; 
+                rb.isKinematic = true; 
+                rb.detectCollisions = false; // Matikan collision detection sementara
             }
         }
-    }
-   
-    // --- LOGIC SPAWN YANG DIPERBAIKI ---
-    System.Collections.IEnumerator SpawnPillowsSafely()
-    {
-        System.Collections.Generic.List<Vector3> usedPositions = new System.Collections.Generic.List<Vector3>();
-        float minSafeDistance = 0.5f; // Jarak aman antar bantal
 
+        yield return new WaitForEndOfFrame();
+
+        // 2. Tempatkan satu per satu
         foreach (var pillow in allPillows)
         {
             if (pillow == null) continue;
 
-            Rigidbody rb = pillow.GetComponent<Rigidbody>();
-            
-            // 1. Matikan total fisika agar tidak meledak saat dipindah
-            if (rb != null)
-            {
-                rb.isKinematic = true; 
-                rb.detectCollisions = false; 
-                // Ganti mode collision biar tidak tembus tembok
-                rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
-            }
-
-            // 2. Cari posisi aman
             Vector3 finalPos = Vector3.zero;
             bool positionFound = false;
             int attempts = 0;
+            
+            // Ambil ukuran box collider bantal untuk cek overlap
+            BoxCollider col = pillow.GetComponent<BoxCollider>();
+            Vector3 checkSize = col != null ? col.size * 0.55f : Vector3.one * 0.2f; 
 
-            while (!positionFound && attempts < 15)
+            while (!positionFound && attempts < 30) // Perbanyak attempt
             {
                 Vector3 candidatePos = GetRandomPositionInVirtualBox(pillowMessyCenterOffset, pillowMessySize);
-                
-                // [FIX] Tambahkan 0.4f ke atas (Y) agar bantal spawn DI UDARA, bukan di dalam kasur
-                candidatePos.y = transform.position.y + pillowMessyCenterOffset.y + 0.4f; 
+                // Selalu spawn agak tinggi biar jatuh gravitasi
+                candidatePos.y = transform.position.y + pillowMessyCenterOffset.y + 0.3f; 
 
-                // Cek jarak dengan bantal lain
-                bool overlap = false;
-                foreach (Vector3 existingPos in usedPositions)
+                // PHYSICS CHECK: Apakah ada collider lain di titik ini?
+                Collider[] hitColliders = Physics.OverlapBox(candidatePos, checkSize, Quaternion.identity);
+                
+                bool hitSomethingImportant = false;
+                foreach(var hit in hitColliders)
                 {
-                    if (Vector3.Distance(candidatePos, existingPos) < minSafeDistance)
-                    {
-                        overlap = true;
-                        break;
-                    }
+                    if (hit.isTrigger || hit.transform == pillow.transform) continue;
+                    hitSomethingImportant = true;
+                    break;
                 }
 
-                if (!overlap)
+                if (!hitSomethingImportant)
                 {
                     finalPos = candidatePos;
                     positionFound = true;
@@ -168,34 +167,58 @@ public class BedTaskManager : MonoBehaviour
                 attempts++;
             }
 
-            // Fallback jika tidak nemu posisi
             if (!positionFound) 
             {
-                finalPos = transform.position + pillowMessyCenterOffset + (Vector3.up * 0.5f);
+                // Fallback: spawn vertical stacking
+                finalPos = transform.position + pillowMessyCenterOffset + (Vector3.up * (0.3f + (allPillows.Length * 0.2f)));
             }
 
-            usedPositions.Add(finalPos);
             pillow.transform.position = finalPos;
-
-            // 3. Acak Rotasi (Safe Tilt)
+            
+            // Random rotasi
             float pillowY_Rotation = Random.Range(0f, 360f);
-            float safeTilt = 5f; // Tilt kecil saja biar stabil
-            pillow.transform.rotation = Quaternion.Euler(Random.Range(-safeTilt, safeTilt), pillowY_Rotation, Random.Range(-safeTilt, safeTilt));
+            pillow.transform.rotation = Quaternion.Euler(0, pillowY_Rotation, 0); 
         }
 
-        // 4. [FIX] Tunggu 0.2 detik (bukan 1 frame) agar posisi benar-benar set
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.1f);
 
-        // 5. Nyalakan fisika kembali
+        // 3. Nyalakan Fisika dengan "Parachute Mode"
         foreach (var pillow in allPillows)
         {
             Rigidbody rb = pillow.GetComponent<Rigidbody>();
             if (rb != null)
             {
                 rb.detectCollisions = true;
-                rb.isKinematic = false; // Biarkan jatuh ke kasur
+                rb.isKinematic = false;
+                
+                // TRICK: Pasang linear damping tinggi
+                rb.linearDamping = 10f; 
+                rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             }
         }
+
+        // 4. Kembalikan fisika normal setelah 2 detik
+        yield return new WaitForSeconds(2.0f);
+        
+        foreach (var pillow in allPillows)
+        {
+            Rigidbody rb = pillow.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.linearDamping = 0f; // Kembali normal
+            }
+        }
+    }
+
+    IEnumerator GentlyDropPillow(Rigidbody rb)
+    {
+        if(rb == null) yield break;
+        
+        rb.detectCollisions = true;
+        rb.isKinematic = false;
+        rb.linearDamping = 10f; // Tahan biar ga mental
+        yield return new WaitForSeconds(1.5f);
+        rb.linearDamping = 0f;
     }
 
     Vector3 GetRandomPositionInVirtualBox(Vector3 centerOffset, Vector3 size)
@@ -240,9 +263,6 @@ public class BedTaskManager : MonoBehaviour
 
                 if (isOverlapping && centerDistance <= placementPrecision)
                 {
-                    Debug.Log("Bantal " + (i + 1) + " Snapped!");
-
-                    // --- SNAP LOGIC ---
                     allPillows[i].transform.position = zoneCollider.transform.position;
                     allPillows[i].transform.rotation = zoneCollider.transform.rotation;
                    
@@ -250,17 +270,14 @@ public class BedTaskManager : MonoBehaviour
                     if(rb)
                     {
                         rb.isKinematic = true;
-                        rb.linearVelocity = Vector3.zero; // Unity 6
+                        rb.linearVelocity = Vector3.zero;
                         rb.angularVelocity = Vector3.zero;
                     }
 
                     pillowIsPlaced[i] = true;
                     LockPillow(allPillows[i]);
 
-                    if (hintController != null)
-                    {
-                        hintController.OnPillowPlacedSuccess(i);
-                    }
+                    if (hintController != null) hintController.OnPillowPlacedSuccess(i);
                 }
             }
         }
@@ -271,10 +288,7 @@ public class BedTaskManager : MonoBehaviour
         if (successCount == allPillows.Length)
         {
             CompletePillowTask();
-            if(globalManager != null) 
-            {
-                globalManager.OnBedFinished();
-            }
+            if(globalManager != null) globalManager.OnBedFinished();
         }
     }
 
@@ -287,12 +301,15 @@ public class BedTaskManager : MonoBehaviour
     void CompletePillowTask()
     {
         currentState = BedTaskState.TaskComplete;
-        Debug.Log("SEMUA BANTAL RAPI!");
     }
 
     void OnDrawGizmosSelected()
     {
         Gizmos.color = new Color(0, 0, 1, 0.5f);
         Gizmos.DrawCube(transform.position + pillowMessyCenterOffset, pillowMessySize);
+        
+        // Visualisasi radius safety
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position + pillowMessyCenterOffset, maxDistanceFromBed);
     }
 }
