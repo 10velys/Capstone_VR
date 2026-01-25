@@ -167,6 +167,50 @@ public class VRTrainingRecorder : MonoBehaviour
         });
     }
 
+    // =================================================================================
+    // [BARU] Method untuk menyiapkan data input ke Random Forest AI
+    // =================================================================================
+    public double[] GetCurrentFeatureVector()
+    {
+        // 1. Hitung metrik secara dinamis dari log yang ada di memori
+        float avg_hand_velocity = 0f;
+        float max_hand_jerk = 0f;
+        float hesitation_time = 0f;
+        float focus_consistency = 0f;
+        float total_duration = Time.time - startTime;
+
+        // Cek jika ada data untuk menghindari error "Sequence contains no elements"
+        if (rawDataLog.Count > 0)
+        {
+            avg_hand_velocity = rawDataLog.Average(x => x.hand_velocity_inst);
+            max_hand_jerk = rawDataLog.Max(x => x.hand_jerk_inst);
+            hesitation_time = rawDataLog.Count(x => x.hand_velocity_inst < hesitationThreshold); // 1 data = 1 detik
+            focus_consistency = CalculateStdDev(rawDataLog.Select(x => x.head_pitch).ToList());
+        }
+
+        // 2. Konversi status tugas (bool) menjadi angka (double)
+        // 1.0 = Selesai, 0.0 = Belum
+        double val_trash = completedCategories.Contains(TaskCategory.Trash) ? 1.0 : 0.0;
+        double val_bed = completedCategories.Contains(TaskCategory.Bedding) ? 1.0 : 0.0;
+        double val_towel = completedCategories.Contains(TaskCategory.Towel) ? 1.0 : 0.0;
+
+        // 3. Kembalikan array double. 
+        // PENTING: Urutan ini HARUS SAMA PERSIS dengan urutan kolom 'X' saat training Python.
+        return new double[] 
+        {
+            (double)current_level,      // Feature 0
+            (double)avg_hand_velocity,  // Feature 1
+            (double)max_hand_jerk,      // Feature 2
+            (double)hesitation_time,    // Feature 3
+            (double)focus_consistency,  // Feature 4
+            (double)total_duration,     // Feature 5
+            val_trash,                  // Feature 6
+            val_bed,                    // Feature 7
+            val_towel                   // Feature 8
+        };
+    }
+    // =================================================================================
+
     void ProcessAndSaveAggregation()
     {
         if (rawDataLog.Count == 0) return;

@@ -3464,6 +3464,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VRLevelManager
   mainMenuCanvas: {fileID: 0}
   levelCompleteCanvas: {fileID: 48793452}
+  btnNextLevel: {fileID: 1125045077}
+  btnRetry: {fileID: 1586963039}
+  resultText: {fileID: 1300954831}
 --- !u!4 &425218539
 Transform:
   m_ObjectHideFlags: 0
@@ -11662,6 +11665,7 @@ MonoBehaviour:
   pillowMessySize: {x: 3, y: 0.2, z: 2.5}
   maxMessyTilt: 10
   placementPrecision: 0.1
+  maxDistanceFromBed: 3
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections; 
 using UnityEngine.SceneManagement; // WAJIB ADA: Untuk pindah scene
+using ML; // WAJIB ADA: Namespace dari script RandomForestModel.cs
 
 public class GlobalRoomManager : MonoBehaviour
 {
@@ -134,48 +135,69 @@ public class GlobalRoomManager : MonoBehaviour
         if(towelHintScript) towelHintScript.enabled = false;
         if(towelDiamondObj) towelDiamondObj.SetActive(false);
 
-        // 2. SAVE DATA (Tetap simpan data training)
+        // 2. STOP RECORDING & SAVE CSV
+        // Kita simpan dulu datanya ke CSV untuk arsip/training ulang nanti
         if (VRTrainingRecorder.Instance != null)
         {
             VRTrainingRecorder.Instance.StopAndSave(); 
         }
 
-        // --- PERUBAHAN DI SINI ---
-        
-        // DULU: Langsung pindah scene otomatis
-        // StartCoroutine(LoadNextLevelRoutine()); 
+        // 3. AI PREDICTION LOGIC
+        bool isPassed = false; // Default: Tidak Lulus
 
-        // SEKARANG: Panggil Canvas "Level Complete" (Next/Restart)
+        if (VRTrainingRecorder.Instance != null)
+        {
+            // A. Ambil Data Feature Vector terbaru (Real-time dari memori)
+            double[] inputFeatures = VRTrainingRecorder.Instance.GetCurrentFeatureVector();
+            
+            // B. Minta prediksi ke Random Forest
+            // RandomForestModel.Score akan mengembalikan array probabilitas [Prob_Gagal, Prob_Lulus]
+            double[] prediction = RandomForestModel.Score(inputFeatures);
+            
+            // C. Evaluasi Hasil
+            // Asumsi: Index 0 = Gagal, Index 1 = Lulus
+            if (prediction != null && prediction.Length >= 2)
+            {
+                // Cek Probabilitas Lulus (Index 1) vs Gagal (Index 0)
+                if (prediction[1] > prediction[0]) 
+                {
+                    isPassed = true;
+                    Debug.Log($"<color=green>AI DECISION: PASSED (Confidence: {prediction[1]:F2})</color>");
+                }
+                else
+                {
+                    isPassed = false;
+                    Debug.Log($"<color=red>AI DECISION: RETRY NEEDED (Confidence: {prediction[0]:F2})</color>");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("AI Prediction Error: Array null atau length tidak valid.");
+            }
+        }
+        
+        // 4. UPDATE UI
+        // Panggil UI Manager dan beritahu hasil keputusannya (Lulus/Tidak)
         VRLevelManager uiManager = FindObjectOfType<VRLevelManager>();
         
         if (uiManager != null)
         {
-            Debug.Log("Memunculkan UI Level Complete...");
-            uiManager.ShowLevelCompleteUI();
+            Debug.Log($"Sending Result to UI: {isPassed}");
+            // Pastikan method ShowLevelCompleteUI di VRLevelManager menerima parameter bool!
+            uiManager.ShowLevelCompleteUI(isPassed);
         }
         else
         {
-            Debug.LogError("VRLevelManager tidak ditemukan di scene! Pastikan GameManager ada.");
+            Debug.LogError("VRLevelManager tidak ditemukan di scene!");
         }
     }
 
-    IEnumerator LoadNextLevelRoutine()
+    // Fungsi helper untuk pindah level (biasanya dipanggil oleh Button Next di UI Manager)
+    // Disimpan di sini jika UI butuh referensi nama scene selanjutnya
+    public string GetNextSceneName()
     {
-        Debug.Log("Level Selesai! Loading next scene...");
-        yield return new WaitForSeconds(4.0f); // Jeda 4 detik
-
-        if (currentLevelStage == 1)
-        {
-            SceneManager.LoadScene(level2SceneName);
-        }
-        else if (currentLevelStage == 2)
-        {
-            SceneManager.LoadScene(level3SceneName);
-        }
-        else 
-        {
-            Debug.Log("Game Tamat! (Level 3 Selesai)");
-            // Bisa isi Application.Quit() atau balik ke menu
-        }
+        if (currentLevelStage == 1) return level2SceneName;
+        if (currentLevelStage == 2) return level3SceneName;
+        return ""; // Game tamat
     }
 }

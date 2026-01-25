@@ -1,12 +1,18 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro; // WAJIB: Agar bisa pakai TextMeshProUGUI
 
 public class VRLevelManager : MonoBehaviour
 {
     [Header("UI References")]
     public GameObject mainMenuCanvas;       // Canvas pilih level (Hanya diisi di Level 1)
-    public GameObject levelCompleteCanvas;  // Canvas Next/Restart
+    public GameObject levelCompleteCanvas;  // Canvas utama untuk Win/Lose
+
+    [Header("AI Result Elements")]
+    public GameObject btnNextLevel;         // Tombol Lanjut (Drag dari Hierarchy)
+    public GameObject btnRetry;             // Tombol Ulang (Drag dari Hierarchy)
+    public TextMeshProUGUI resultText;      // Text status (Drag dari Hierarchy)
 
     // Static variable untuk mengingat status restart di Level 1
     // Agar saat Level 1 di-restart, dia tidak kembali menampilkan Menu Pilih Level
@@ -14,26 +20,21 @@ public class VRLevelManager : MonoBehaviour
 
     void Start()
     {
-        // Cek apakah kita sedang di Scene Level 1 (VR Basic)
+        // --- LOGIKA MENU LEVEL 1 (SAMA SEPERTI SEBELUMNYA) ---
         if (SceneManager.GetActiveScene().name == "VR Basic")
         {
             if (isRestartingLevel1)
             {
-                // Jika ini adalah hasil restart, sembunyikan menu awal, langsung main
                 if (mainMenuCanvas != null) mainMenuCanvas.SetActive(false);
-                
-                // Reset status agar jika user quit dan masuk lagi, menu muncul lagi
                 isRestartingLevel1 = false; 
             }
             else
             {
-                // Jika baru pertama buka game, munculkan menu
                 if (mainMenuCanvas != null) mainMenuCanvas.SetActive(true);
             }
         }
         else
         {
-            // Di Level 2 dan 3, pastikan MainMenu tidak ada/mati
             if (mainMenuCanvas != null) mainMenuCanvas.SetActive(false);
         }
 
@@ -57,25 +58,38 @@ public class VRLevelManager : MonoBehaviour
         }
     }
 
-    // --- FUNGSI SAAT TASK SELESAI ---
+    // --- FUNGSI SAAT TASK SELESAI (DIPANGGIL GLOBALROOMMANAGER) ---
     
-    // Panggil fungsi ini dari script Task/Game Logic Anda ketika semua tugas beres
-    public void ShowLevelCompleteUI()
+    // Perubahan: Sekarang menerima parameter bool dari AI
+    public void ShowLevelCompleteUI(bool userPassed)
     {
         if (levelCompleteCanvas != null)
         {
             levelCompleteCanvas.SetActive(true);
             
-            // Posisikan canvas di depan kamera player (opsional, biar user gak perlu noleh)
-            // Transform head = Camera.main.transform;
-            // levelCompleteCanvas.transform.position = head.position + (head.forward * 2f);
-            // levelCompleteCanvas.transform.LookAt(new Vector3(head.position.x, levelCompleteCanvas.transform.position.y, head.position.z));
-            // levelCompleteCanvas.transform.Rotate(0, 180, 0);
+            // LOGIKA UI BERDASARKAN HASIL AI
+            if (userPassed)
+            {
+                // LULUS: Boleh lanjut, tidak perlu ulang
+                if(btnNextLevel) btnNextLevel.SetActive(true);
+                if(btnRetry) btnRetry.SetActive(false); // Atau set true jika user boleh mengulang sukarela
+                
+                if(resultText) resultText.text = "LEVEL COMPLETED!\n<color=green>AI Status: PASSED</color>";
+            }
+            else
+            {
+                // GAGAL: Tidak boleh lanjut, harus ulang
+                if(btnNextLevel) btnNextLevel.SetActive(false);
+                if(btnRetry) btnRetry.SetActive(true);
+                
+                if(resultText) resultText.text = "LEVEL FAILED.\n<color=red>AI Status: RETRY REQUIRED</color>";
+            }
         }
     }
 
-    // --- FUNGSI UNTUK TOMBOL NEXT & RESTART ---
+    // --- FUNGSI UNTUK TOMBOL DI UNITY INSPECTOR ---
 
+    // Hubungkan ini ke Button Retry -> OnClick()
     public void RestartCurrentLevel()
     {
         string currentScene = SceneManager.GetActiveScene().name;
@@ -89,6 +103,7 @@ public class VRLevelManager : MonoBehaviour
         SceneManager.LoadScene(currentScene);
     }
 
+    // Hubungkan ini ke Button Next Level -> OnClick()
     public void LoadNextLevel()
     {
         // Ambil index scene saat ini + 1
@@ -102,8 +117,8 @@ public class VRLevelManager : MonoBehaviour
         else
         {
             Debug.Log("Sudah tamat! (Ini level terakhir)");
-            // Opsional: Kembali ke Main Menu
-            // SceneManager.LoadScene("VR Basic");
+            // Opsional: Tampilkan teks tamat atau kembali ke menu
+            if(resultText) resultText.text = "ALL LEVELS COMPLETED!";
         }
     }
 }
