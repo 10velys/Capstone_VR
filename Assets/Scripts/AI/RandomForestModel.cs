@@ -1,5 +1,7 @@
 namespace ML {
     public static class RandomForestModel {
+        public static double[] scaler_mean = new double[] { 0.2665, 7150.80, 47.00, 11.00, 116.77, 1, 1, 1, 1 }; 
+        public static double[] scaler_scale = new double[] { 1.5, 200.5, 10.2, 5.5, 20.1, 1, 1, 1, 1 };
         public static double[] Score(double[] input) {
             double[] var0;
             if (input[2] <= -0.08034390211105347) {
