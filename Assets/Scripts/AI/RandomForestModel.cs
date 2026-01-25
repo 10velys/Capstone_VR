@@ -2,24 +2,24 @@ namespace ML {
     public static class RandomForestModel {
         public static double[] scaler_mean = new double[] { 1.8771428571428572, 0.43531314285714284, 7439.357158857142, 33.59008571428572, 11.960059714285716, 125.8218, 1.0, 1.0, 1.0}; 
         public static double[] scaler_scale = new double[] { 0.8171678317861775, 0.16199261305506543, 27298.190929789333, 19.45342605869785, 4.931841312051999, 39.100943969825444, 1.0, 1.0, 1.0};
-        public static double[] Score(double[] input) {
-            // >>> AWAL KODE TAMBAHAN >>>
-            // 1. Buat array penampung baru
-            double[] scaledInput = new double[input.Length];
-
-            // 2. Loop untuk menghitung rumus matematika (Input - Mean) / Scale
-            for (int i = 0; i < input.Length; i++)
-            {
-                // Safety check agar tidak error jika pembagi 0
-                double divider = scaler_scale[i] == 0 ? 1.0 : scaler_scale[i];
-                
-                // Rumus Scaling
-                scaledInput[i] = (input[i] - scaler_mean[i]) / divider;
+        public static double[] Score(double[] rawInput) {
+            
+            // 1. VALIDASI INPUT
+            if (rawInput.Length != means.Length) {
+                // Jika panjang data tidak sesuai, kembalikan nilai default (Error handling)
+                // Ini mencegah game crash jika data recorder belum siap
+                return new double[] { 1.0, 0.0 }; // Default: Gagal (Safety)
             }
 
-            // 3. Timpa input mentah dengan input yang sudah bersih
-            input = scaledInput;
-            // <<< AKHIR KODE TAMBAHAN <<<
+            // 2. PROSES SCALING (StandardScaler)
+            // Kita buat array baru bernama 'input' agar sesuai dengan variabel 
+            // yang diharapkan oleh kode hasil generate m2cgen di bawahnya.
+            double[] input = new double[rawInput.Length];
+            
+            for (int i = 0; i < rawInput.Length; i++) {
+                // Rumus: (x - mean) / scale
+                input[i] = (rawInput[i] - means[i]) / scales[i];
+            }
 
 
             // --- Kode Asli Bawaan m2cgen (JANGAN DIHAPUS) ---
