@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections; 
-using UnityEngine.SceneManagement; // WAJIB ADA: Untuk pindah scene
-using ML; // WAJIB ADA: Namespace dari script RandomForestModel.cs
+using UnityEngine.SceneManagement; 
+using ML; 
 
 public class GlobalRoomManager : MonoBehaviour
 {
@@ -10,7 +10,6 @@ public class GlobalRoomManager : MonoBehaviour
     [Range(1, 3)] public int currentLevelStage = 1; 
 
     [Header("Scene Management")]
-    // Pastikan nama ini SAMA PERSIS dengan nama file scene kamu di folder Project
     public string level2SceneName = "VR Basic_Level 2";
     public string level3SceneName = "VR Basic_Level 3";
 
@@ -31,7 +30,6 @@ public class GlobalRoomManager : MonoBehaviour
 
     private void Start()
     {
-        // Kirim Info Level ke Semua Hint Script saat game mulai
         if(trashHintScript) trashHintScript.SetLevel(currentLevelStage);
         if(bedHintScript) bedHintScript.SetLevel(currentLevelStage);
         if(towelHintScript) towelHintScript.SetLevel(currentLevelStage);
@@ -42,26 +40,22 @@ public class GlobalRoomManager : MonoBehaviour
     IEnumerator InitSequence()
     {
         Debug.Log($"GlobalManager: Starting Level Mode {currentLevelStage}...");
-        
         yield return new WaitForSeconds(0.1f);
-        DisableAllTasks(); // Kunci semua interaksi di awal
+        DisableAllTasks(); 
         yield return new WaitForSeconds(1.0f);
         StartTrashTask();
     }
 
     void DisableAllTasks()
     {
-        // Matikan Interaksi (Grab)
         if(trashManager) trashManager.ToggleInteraction(false);
         if(bedManager) bedManager.ToggleInteraction(false);
         if(towelManager) towelManager.ToggleInteraction(false);
 
-        // Matikan Logic Hint
         if(trashHintScript) trashHintScript.enabled = false;
         if(bedHintScript) bedHintScript.enabled = false;
         if(towelHintScript) towelHintScript.enabled = false;
 
-        // Matikan Visual Hint
         if(trashDiamondObj) trashDiamondObj.SetActive(false);
         if(bedDiamondObj) bedDiamondObj.SetActive(false);
         if(towelDiamondObj) towelDiamondObj.SetActive(false);
@@ -71,18 +65,12 @@ public class GlobalRoomManager : MonoBehaviour
     void StartTrashTask()
     {
         Debug.Log(">>> PHASE 1 STARTED: TRASH <<<");
-        
-        // SETUP RECORDER
         if (VRTrainingRecorder.Instance != null)
         {
             VRTrainingRecorder.Instance.current_level = currentLevelStage;
             VRTrainingRecorder.Instance.StartRecording();
         }
-
-        // Buka Kunci Sampah
         if(trashManager) trashManager.ToggleInteraction(true);
-        
-        // Nyalakan Script Hint (Visualnya nanti diatur sendiri oleh script hint berdasarkan level)
         if(trashHintScript) trashHintScript.enabled = true;      
         if(trashDiamondObj) trashDiamondObj.SetActive(true);      
     }
@@ -90,11 +78,9 @@ public class GlobalRoomManager : MonoBehaviour
     public void OnTrashFinished()
     {
         Debug.Log(">>> PHASE 1 COMPLETED <<<");
-        
-        if(trashManager) trashManager.ToggleInteraction(false); // Kunci lagi sampah
+        if(trashManager) trashManager.ToggleInteraction(false); 
         if(trashHintScript) trashHintScript.enabled = false;      
         if(trashDiamondObj) trashDiamondObj.SetActive(false);     
-        
         StartBedTask();
     }
 
@@ -102,7 +88,7 @@ public class GlobalRoomManager : MonoBehaviour
     void StartBedTask()
     {
         Debug.Log(">>> PHASE 2 STARTED: BED <<<");
-        if(bedManager) bedManager.ToggleInteraction(true); // Buka kunci Bantal
+        if(bedManager) bedManager.ToggleInteraction(true); 
         if(bedHintScript) bedHintScript.enabled = true;        
         if(bedDiamondObj) bedDiamondObj.SetActive(true);       
     }
@@ -113,7 +99,6 @@ public class GlobalRoomManager : MonoBehaviour
         if(bedManager) bedManager.ToggleInteraction(false);
         if(bedHintScript) bedHintScript.enabled = false;       
         if(bedDiamondObj) bedDiamondObj.SetActive(false);      
-
         StartTowelTask();
     }
 
@@ -121,7 +106,7 @@ public class GlobalRoomManager : MonoBehaviour
     void StartTowelTask()
     {
         Debug.Log(">>> PHASE 3 STARTED: TOWEL <<<");
-        if(towelManager) towelManager.ToggleInteraction(true); // Buka kunci Handuk
+        if(towelManager) towelManager.ToggleInteraction(true); 
         if(towelHintScript) towelHintScript.enabled = true;      
         if(towelDiamondObj) towelDiamondObj.SetActive(true);     
     }
@@ -130,61 +115,71 @@ public class GlobalRoomManager : MonoBehaviour
     {
         Debug.Log(">>> ALL TASKS COMPLETED <<<");
         
-        // 1. Matikan Interaksi Handuk & Hint
+        // 1. Matikan Interaksi
         if(towelManager) towelManager.ToggleInteraction(false);
         if(towelHintScript) towelHintScript.enabled = false;
         if(towelDiamondObj) towelDiamondObj.SetActive(false);
 
-        // 2. STOP RECORDING & SAVE CSV
-        // Kita simpan dulu datanya ke CSV untuk arsip/training ulang nanti
+        // 2. STOP RECORDING
         if (VRTrainingRecorder.Instance != null)
         {
             VRTrainingRecorder.Instance.StopAndSave(); 
         }
 
-        // 3. AI PREDICTION LOGIC
-        bool isPassed = false; // Default: Tidak Lulus
+        // 3. AI PREDICTION & LOGIC BARU
+        double[] prediction = null; 
+        double prob_pass = 0.0; // Default 0
 
         if (VRTrainingRecorder.Instance != null)
         {
-            // A. Ambil Data Feature Vector terbaru (Real-time dari memori)
             double[] inputFeatures = VRTrainingRecorder.Instance.GetCurrentFeatureVector();
+            prediction = RandomForestModel.Score(inputFeatures);
             
-            // B. Minta prediksi ke Random Forest
-            // RandomForestModel.Score akan mengembalikan array probabilitas [Prob_Gagal, Prob_Lulus]
-            double[] prediction = RandomForestModel.Score(inputFeatures);
-            
-            // C. Evaluasi Hasil
-            // Asumsi: Index 0 = Gagal, Index 1 = Lulus
             if (prediction != null && prediction.Length >= 2)
             {
-                // Cek Probabilitas Lulus (Index 1) vs Gagal (Index 0)
-                if (prediction[1] > prediction[0]) 
-                {
-                    isPassed = true;
-                    Debug.Log($"<color=green>AI DECISION: PASSED (Confidence: {prediction[1]:F2})</color>");
-                }
-                else
-                {
-                    isPassed = false;
-                    Debug.Log($"<color=red>AI DECISION: RETRY NEEDED (Confidence: {prediction[0]:F2})</color>");
-                }
-            }
-            else
-            {
-                Debug.LogWarning("AI Prediction Error: Array null atau length tidak valid.");
+                // Ambil probabilitas LULUS (biasanya index 1)
+                prob_pass = prediction[1]; 
+                Debug.Log($"AI Raw Score: Fail={prediction[0]:F4}, Pass={prediction[1]:F4}");
             }
         }
+
+        // --- LOGIKA FEEDBACK SESUAI REQUEST ---
+        string feedbackMsg = "";
         
-        // 4. UPDATE UI
-        // Panggil UI Manager dan beritahu hasil keputusannya (Lulus/Tidak)
+        if (prob_pass >= 0.90)
+        {
+            feedbackMsg = "Luar biasa! Motorikmu sangat stabil dan fokusmu sempurna.";
+        }
+        else if (prob_pass >= 0.70)
+        {
+            feedbackMsg = "Bagus! Kamu lulus. Cobalah untuk sedikit lebih halus dalam bergerak.";
+        }
+        else if (prob_pass >= 0.50)
+        {
+            feedbackMsg = "Kamu lulus, tapi kamu tampak banyak ragu-ragu.";
+        }
+        else if (prob_pass >= 0.30)
+        {
+            feedbackMsg = "Hampir saja! Fokuslah pada penyelesaian tugas.";
+        }
+        else
+        {
+            feedbackMsg = "Ayo berlatih lagi. Fokuslah pada satu tugas sampai selesai.";
+        }
+
+        // Tentukan Status Lulus/Gagal (Threshold 0.5)
+        bool isPassed = (prob_pass >= 0.50);
+
+        Debug.Log($"<color={(isPassed ? "green" : "red")}>RESULT: {isPassed} (Score: {prob_pass:P1})</color>");
+        Debug.Log($"MSG: {feedbackMsg}");
+        
+        // 4. KIRIM KE UI
         VRLevelManager uiManager = FindObjectOfType<VRLevelManager>();
         
         if (uiManager != null)
         {
-            Debug.Log($"Sending Result to UI: {isPassed}");
-            // Pastikan method ShowLevelCompleteUI di VRLevelManager menerima parameter bool!
-            uiManager.ShowLevelCompleteUI(isPassed);
+            // Parameter confidence (prob_pass) tetap dikirim meski mungkin tidak ditampilkan
+            uiManager.ShowLevelCompleteUI(isPassed, prob_pass, feedbackMsg);
         }
         else
         {
@@ -192,12 +187,10 @@ public class GlobalRoomManager : MonoBehaviour
         }
     }
 
-    // Fungsi helper untuk pindah level (biasanya dipanggil oleh Button Next di UI Manager)
-    // Disimpan di sini jika UI butuh referensi nama scene selanjutnya
     public string GetNextSceneName()
     {
         if (currentLevelStage == 1) return level2SceneName;
         if (currentLevelStage == 2) return level3SceneName;
-        return ""; // Game tamat
+        return ""; 
     }
 }

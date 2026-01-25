@@ -5,7 +5,7 @@ namespace ML {
         public static double[] Score(double[] rawInput) {
             
             // 1. VALIDASI INPUT
-            if (rawInput.Length != means.Length) {
+            if (rawInput.Length != scaler_mean.Length) {
                 // Jika panjang data tidak sesuai, kembalikan nilai default (Error handling)
                 // Ini mencegah game crash jika data recorder belum siap
                 return new double[] { 1.0, 0.0 }; // Default: Gagal (Safety)
@@ -18,7 +18,7 @@ namespace ML {
             
             for (int i = 0; i < rawInput.Length; i++) {
                 // Rumus: (x - mean) / scale
-                input[i] = (rawInput[i] - means[i]) / scales[i];
+                input[i] = (rawInput[i] - scaler_mean[i]) / scaler_scale[i];
             }
 
 
