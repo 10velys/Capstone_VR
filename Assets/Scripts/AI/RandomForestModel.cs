@@ -1,8 +1,28 @@
 namespace ML {
     public static class RandomForestModel {
-        public static double[] scaler_mean = new double[] { 0.2665, 7150.80, 47.00, 11.00, 116.77, 1, 1, 1, 1 }; 
-        public static double[] scaler_scale = new double[] { 1.5, 200.5, 10.2, 5.5, 20.1, 1, 1, 1, 1 };
+        public static double[] scaler_mean = new double[] { 1.8771428571428572, 0.43531314285714284, 7439.357158857142, 33.59008571428572, 11.960059714285716, 125.8218, 1.0, 1.0, 1.0}; 
+        public static double[] scaler_scale = new double[] { 0.8171678317861775, 0.16199261305506543, 27298.190929789333, 19.45342605869785, 4.931841312051999, 39.100943969825444, 1.0, 1.0, 1.0};
         public static double[] Score(double[] input) {
+            // >>> AWAL KODE TAMBAHAN >>>
+            // 1. Buat array penampung baru
+            double[] scaledInput = new double[input.Length];
+
+            // 2. Loop untuk menghitung rumus matematika (Input - Mean) / Scale
+            for (int i = 0; i < input.Length; i++)
+            {
+                // Safety check agar tidak error jika pembagi 0
+                double divider = scaler_scale[i] == 0 ? 1.0 : scaler_scale[i];
+                
+                // Rumus Scaling
+                scaledInput[i] = (input[i] - scaler_mean[i]) / divider;
+            }
+
+            // 3. Timpa input mentah dengan input yang sudah bersih
+            input = scaledInput;
+            // <<< AKHIR KODE TAMBAHAN <<<
+
+
+            // --- Kode Asli Bawaan m2cgen (JANGAN DIHAPUS) ---
             double[] var0;
             if (input[2] <= -0.08034390211105347) {
                 if (input[1] <= -1.4569376707077026) {
