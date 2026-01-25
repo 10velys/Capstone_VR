@@ -172,32 +172,44 @@ public class VRTrainingRecorder : MonoBehaviour
     // =================================================================================
     public double[] GetCurrentFeatureVector()
     {
-        // 1. Hitung ulang statistik terakhir sebelum dikirim
-        float current_avg_velocity = (velocityDataPoints.Count > 0) ? velocityDataPoints.Average() : 0f;
-        float current_max_jerk = (jerkDataPoints.Count > 0) ? jerkDataPoints.Max() : 0f;
-        float current_focus = (focusDataPoints.Count > 0) ? focusDataPoints.Average() : 0f;
-        float current_duration = Time.time - startTime;
+        // 1. Deklarasi variabel SAMA PERSIS dengan nama fitur
+        float avg_hand_velocity = 0f;
+        float max_hand_jerk = 0f;
+        float hesitation_time = 0f;
+        float focus_consistency = 0f;
+        float total_duration = Time.time - startTime;
 
-        // 2. Convert Task Boolean ke Angka (1.0 = Selesai, 0.0 = Belum)
+        // 2. Hitung data dari 'rawDataLog' (Jika ada data)
+        if (rawDataLog.Count > 0)
+        {
+            avg_hand_velocity = rawDataLog.Average(x => x.hand_velocity_inst);
+            max_hand_jerk = rawDataLog.Max(x => x.hand_jerk_inst);
+            
+            // Hitung jumlah data di mana kecepatan tangan di bawah threshold
+            hesitation_time = rawDataLog.Count(x => x.hand_velocity_inst < hesitationThreshold);
+            
+            // Hitung standar deviasi untuk pitch kepala
+            var pitchList = rawDataLog.Select(x => x.head_pitch).ToList();
+            focus_consistency = CalculateStdDev(pitchList);
+        }
+
+        // 3. Konversi Task ke Angka (0.0 atau 1.0)
         double val_trash = completedCategories.Contains(TaskCategory.Trash) ? 1.0 : 0.0;
         double val_bed = completedCategories.Contains(TaskCategory.Bedding) ? 1.0 : 0.0;
         double val_towel = completedCategories.Contains(TaskCategory.Towel) ? 1.0 : 0.0;
 
-        // 3. Return Array Double (URUTAN HARUS SAMA PERSIS DENGAN SCALER DI RANDOMFORESTMODEL.CS!)
-        // Berdasarkan analisis scaler mean Anda:
-        // [0] Level, [1] Vel, [2] Jerk, [3] Hesitation, [4] Focus, [5] Duration, [6] Trash, [7] Bed, [8] Towel
-        
+        // 4. Return Array (Nama variabel sudah sesuai permintaan Anda)
         return new double[] 
         {
-            (double)current_level,      // Index 0: Mean ~1.87
-            (double)current_avg_velocity, // Index 1: Mean ~0.43
-            (double)current_max_jerk,     // Index 2: Mean ~7439 (Sesuai!)
-            (double)hesitation_time,    // Index 3: Mean ~33.59
-            (double)current_focus,      // Index 4: Mean ~11.96
-            (double)current_duration,   // Index 5: Mean ~125.82
-            val_trash,                  // Index 6
-            val_bed,                    // Index 7
-            val_towel                   // Index 8
+            (double)current_level,      // Feature 0
+            (double)avg_hand_velocity,  // Feature 1
+            (double)max_hand_jerk,      // Feature 2
+            (double)hesitation_time,    // Feature 3
+            (double)focus_consistency,  // Feature 4
+            (double)total_duration,     // Feature 5
+            val_trash,                  // Feature 6
+            val_bed,                    // Feature 7
+            val_towel                   // Feature 8
         };
     }
     // =================================================================================
