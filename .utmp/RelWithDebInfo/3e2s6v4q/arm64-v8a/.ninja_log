@@ -1,10 +1,19 @@
 # ninja log v5
 40	2662	7906867929967147	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	bfc43fcfac111e97
 28	2679	7906867929967147	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	7f12a824c32ac3e
-0	2711	7906867930509385	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	eba86cc2c4f09026
-63	2762	7906867931043529	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	56daec09c95230f9
-20	2855	7906867932036482	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	99fc1b50aab51a75
 75	3094	7906867934498303	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	cc18de2744c9faca
+0	2711	7906867930509385	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	eba86cc2c4f09026
+20	2855	7906867932036482	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	99fc1b50aab51a75
+63	2762	7906867931043529	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	56daec09c95230f9
+3229	3400	7906867937595456	C:/Users/mulya/unity/Capstone_VR/Capstone_VR/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/3e2s6v4q/obj/arm64-v8a/libgame.so	92e3bf38fd907fa3
 51	3102	7906867934567910	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	4d44091e42f3018f
 11	3229	7906867935828082	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	46f2b3fb79e057f4
-3229	3400	7906867937595456	C:/Users/mulya/unity/Capstone_VR/Capstone_VR/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/3e2s6v4q/obj/arm64-v8a/libgame.so	92e3bf38fd907fa3
+92	5161	7911071854322413	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	bfc43fcfac111e97
+173	5168	7911071854322413	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	7f12a824c32ac3e
+54	5239	7911071855144052	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	eba86cc2c4f09026
+119	5249	7911071855230773	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	56daec09c95230f9
+73	5426	7911071856992449	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	99fc1b50aab51a75
+147	5964	7911071862356140	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	4d44091e42f3018f
+34	6326	7911071865772465	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	46f2b3fb79e057f4
+195	6459	7911071867272700	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	cc18de2744c9faca
+6460	6959	7911071872344129	C:/Users/mulya/unity/Capstone_VR/Capstone_VR/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/3e2s6v4q/obj/arm64-v8a/libgame.so	92e3bf38fd907fa3

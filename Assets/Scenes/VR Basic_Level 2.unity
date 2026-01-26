@@ -5160,9 +5160,6 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 129652, guid: 7ce28fe856d34dc4b908e0d8b1323fb6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 817252826}
-    - targetCorrespondingSourceObject: {fileID: 129652, guid: 7ce28fe856d34dc4b908e0d8b1323fb6, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 817252825}
   m_SourcePrefab: {fileID: 100100000, guid: 7ce28fe856d34dc4b908e0d8b1323fb6, type: 3}
 --- !u!4 &817252822 stripped
@@ -5198,18 +5195,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09917f8fc7888f04aba04d1e874e189d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowelInteractionHelper
---- !u!114 &817252826
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 817252823}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1bfc9c95150f1b442a35fc54c245fb31, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StickyGrab
 --- !u!1001 &826478057
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5508,7 +5493,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 9148427607387596856, guid: e86136b837c4ece4a841d099b6e05fb5, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
