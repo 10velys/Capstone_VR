@@ -3,7 +3,6 @@ using UnityEngine.XR.Interaction.Toolkit;
 using System.Collections;
 using System.Collections.Generic;
 
-// Enum tetap di luar class
 public enum BedTaskState
 {
     TidyPillows,
@@ -22,7 +21,6 @@ public class BedTaskManager : MonoBehaviour
     public BedTaskState currentState;
 
     [Header("Task Objects (Interactables)")]
-    // Unity 6 Namespace
     public UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable pillow1;
     public UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable pillow2;
     public UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable pillow3;
@@ -41,7 +39,7 @@ public class BedTaskManager : MonoBehaviour
     public float placementPrecision = 0.4f;
     
     [Header("Safety Settings")]
-    public float maxDistanceFromBed = 3.0f; // Jarak maksimal bantal boleh berada dari kasur
+    public float maxDistanceFromBed = 3.0f;
 
     private UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable[] allPillows;
     private bool[] pillowIsPlaced;
@@ -54,26 +52,20 @@ public class BedTaskManager : MonoBehaviour
        
         StartCoroutine(SpawnPillowsSafely());
         InitializePillowTask();
-        
-        // Memanggil fungsi ToggleInteraction agar user tidak bisa grab sebelum waktunya
         ToggleInteraction(false);
     }
 
-    // --- FUNGSI YANG HILANG SEBELUMNYA (DITAMBAHKAN KEMBALI) ---
     public void ToggleInteraction(bool state)
     {
         foreach (var pillow in allPillows)
         {
             if (pillow != null)
             {
-                // Mengaktifkan/menonaktifkan komponen interaksi agar bisa/tidak bisa dipegang
                 pillow.enabled = state; 
             }
         }
     }
-    // -----------------------------------------------------------
 
-    // --- SAFETY NET YANG LEBIH KUAT ---
     void FixedUpdate()
     {
         if (currentState != BedTaskState.TidyPillows) return;
@@ -82,12 +74,10 @@ public class BedTaskManager : MonoBehaviour
         {
             if (pillow != null && pillow.enabled)
             {
-                // Cek Jarak Absolute dari titik pusat Bed Manager
                 float dist = Vector3.Distance(transform.position + pillowMessyCenterOffset, pillow.transform.position);
                 
                 if (dist > maxDistanceFromBed) 
                 {
-                    Debug.LogWarning($"Bantal {pillow.name} mental terlalu jauh ({dist}m)! Respawning...");
                     RespawnSinglePillow(pillow);
                 }
             }
@@ -104,7 +94,6 @@ public class BedTaskManager : MonoBehaviour
             rb.isKinematic = true; 
         }
 
-        // Respawn di posisi aman (sedikit di atas area acak)
         Vector3 safePos = transform.position + pillowMessyCenterOffset + (Vector3.up * 0.6f); 
         pillow.transform.position = safePos;
         pillow.transform.rotation = Quaternion.identity;
@@ -112,10 +101,8 @@ public class BedTaskManager : MonoBehaviour
         StartCoroutine(GentlyDropPillow(rb));
     }
 
-    // --- LOGIC SPAWN ANTI LEDAK ---
     IEnumerator SpawnPillowsSafely()
     {
-        // 1. Matikan dulu semua bantal
         foreach (var pillow in allPillows)
         {
             if (pillow == null) continue;
@@ -123,13 +110,12 @@ public class BedTaskManager : MonoBehaviour
             if (rb != null)
             {
                 rb.isKinematic = true; 
-                rb.detectCollisions = false; // Matikan collision detection sementara
+                rb.detectCollisions = false;
             }
         }
 
         yield return new WaitForEndOfFrame();
 
-        // 2. Tempatkan satu per satu
         foreach (var pillow in allPillows)
         {
             if (pillow == null) continue;
@@ -138,17 +124,14 @@ public class BedTaskManager : MonoBehaviour
             bool positionFound = false;
             int attempts = 0;
             
-            // Ambil ukuran box collider bantal untuk cek overlap
             BoxCollider col = pillow.GetComponent<BoxCollider>();
             Vector3 checkSize = col != null ? col.size * 0.55f : Vector3.one * 0.2f; 
 
-            while (!positionFound && attempts < 30) // Perbanyak attempt
+            while (!positionFound && attempts < 30)
             {
                 Vector3 candidatePos = GetRandomPositionInVirtualBox(pillowMessyCenterOffset, pillowMessySize);
-                // Selalu spawn agak tinggi biar jatuh gravitasi
                 candidatePos.y = transform.position.y + pillowMessyCenterOffset.y + 0.3f; 
 
-                // PHYSICS CHECK: Apakah ada collider lain di titik ini?
                 Collider[] hitColliders = Physics.OverlapBox(candidatePos, checkSize, Quaternion.identity);
                 
                 bool hitSomethingImportant = false;
@@ -169,20 +152,16 @@ public class BedTaskManager : MonoBehaviour
 
             if (!positionFound) 
             {
-                // Fallback: spawn vertical stacking
                 finalPos = transform.position + pillowMessyCenterOffset + (Vector3.up * (0.3f + (allPillows.Length * 0.2f)));
             }
 
             pillow.transform.position = finalPos;
-            
-            // Random rotasi
             float pillowY_Rotation = Random.Range(0f, 360f);
             pillow.transform.rotation = Quaternion.Euler(0, pillowY_Rotation, 0); 
         }
 
         yield return new WaitForSeconds(0.1f);
 
-        // 3. Nyalakan Fisika dengan "Parachute Mode"
         foreach (var pillow in allPillows)
         {
             Rigidbody rb = pillow.GetComponent<Rigidbody>();
@@ -190,14 +169,11 @@ public class BedTaskManager : MonoBehaviour
             {
                 rb.detectCollisions = true;
                 rb.isKinematic = false;
-                
-                // TRICK: Pasang linear damping tinggi
                 rb.linearDamping = 10f; 
                 rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             }
         }
 
-        // 4. Kembalikan fisika normal setelah 2 detik
         yield return new WaitForSeconds(2.0f);
         
         foreach (var pillow in allPillows)
@@ -205,7 +181,7 @@ public class BedTaskManager : MonoBehaviour
             Rigidbody rb = pillow.GetComponent<Rigidbody>();
             if (rb != null)
             {
-                rb.linearDamping = 0f; // Kembali normal
+                rb.linearDamping = 0f;
             }
         }
     }
@@ -216,7 +192,7 @@ public class BedTaskManager : MonoBehaviour
         
         rb.detectCollisions = true;
         rb.isKinematic = false;
-        rb.linearDamping = 10f; // Tahan biar ga mental
+        rb.linearDamping = 10f;
         yield return new WaitForSeconds(1.5f);
         rb.linearDamping = 0f;
     }
@@ -250,45 +226,82 @@ public class BedTaskManager : MonoBehaviour
     private void CheckPillowPlacement(SelectExitEventArgs arg0)
     {
         if (currentState != BedTaskState.TidyPillows) return;
-       
-        for (int i = 0; i < allPillows.Length; i++)
+
+        var grabbedPillow = arg0.interactableObject.transform.GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
+        if (grabbedPillow == null) return;
+
+        Collider pillowCollider = grabbedPillow.GetComponent<Collider>();
+        int pillowIndex = System.Array.IndexOf(allPillows, grabbedPillow);
+        int level = (globalManager != null) ? globalManager.currentLevelStage : 1;
+
+        if (level == 1)
         {
-            if (!pillowIsPlaced[i] && allPillows[i] != null)
+            if (pillowIndex != -1 && !pillowIsPlaced[pillowIndex])
             {
-                Collider pillowCollider = allPillows[i].GetComponent<Collider>();
-                Collider zoneCollider = pillowTargetZones[i];
-
-                bool isOverlapping = zoneCollider.bounds.Intersects(pillowCollider.bounds);
-                float centerDistance = Vector3.Distance(pillowCollider.bounds.center, zoneCollider.bounds.center);
-
-                if (isOverlapping && centerDistance <= placementPrecision)
+                Collider targetZone = pillowTargetZones[pillowIndex];
+                if (CheckFit(pillowCollider, targetZone))
                 {
-                    allPillows[i].transform.position = zoneCollider.transform.position;
-                    allPillows[i].transform.rotation = zoneCollider.transform.rotation;
-                   
-                    Rigidbody rb = allPillows[i].GetComponent<Rigidbody>();
-                    if(rb)
-                    {
-                        rb.isKinematic = true;
-                        rb.linearVelocity = Vector3.zero;
-                        rb.angularVelocity = Vector3.zero;
-                    }
+                    ApplyPlacement(grabbedPillow, targetZone, pillowIndex);
+                }
+            }
+        }
+        else
+        {
+            bool isLargePillow = (pillowIndex == 0 || pillowIndex == 1);
 
-                    pillowIsPlaced[i] = true;
-                    LockPillow(allPillows[i]);
+            for (int j = 0; j < pillowTargetZones.Length; j++)
+            {
+                if (pillowIsPlaced[j]) continue;
 
-                    if (hintController != null) hintController.OnPillowPlacedSuccess(i);
+                bool isTargetForLarge = (j == 0 || j == 1);
+                if (isLargePillow != isTargetForLarge) continue;
+
+                Collider targetZone = pillowTargetZones[j];
+                if (CheckFit(pillowCollider, targetZone))
+                {
+                    ApplyPlacement(grabbedPillow, targetZone, j);
+                    break;
                 }
             }
         }
 
+        CheckAllTasksComplete();
+    }
+
+    private bool CheckFit(Collider pillow, Collider zone)
+    {
+        bool isOverlapping = zone.bounds.Intersects(pillow.bounds);
+        float centerDistance = Vector3.Distance(pillow.bounds.center, zone.bounds.center);
+        return isOverlapping && centerDistance <= placementPrecision;
+    }
+
+    private void ApplyPlacement(UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable pillow, Collider zone, int index)
+    {
+        pillow.transform.position = zone.transform.position;
+        pillow.transform.rotation = zone.transform.rotation;
+        
+        Rigidbody rb = pillow.GetComponent<Rigidbody>();
+        if(rb)
+        {
+            rb.isKinematic = true;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        pillowIsPlaced[index] = true;
+        LockPillow(pillow);
+        if (hintController != null) hintController.OnPillowPlacedSuccess(index);
+    }
+
+    private void CheckAllTasksComplete()
+    {
         int successCount = 0;
-        foreach(bool placed in pillowIsPlaced) if(placed) successCount++;
-       
+        foreach (bool placed in pillowIsPlaced) if (placed) successCount++;
+
         if (successCount == allPillows.Length)
         {
             CompletePillowTask();
-            if(globalManager != null) globalManager.OnBedFinished();
+            if (globalManager != null) globalManager.OnBedFinished();
         }
     }
 
@@ -307,8 +320,6 @@ public class BedTaskManager : MonoBehaviour
     {
         Gizmos.color = new Color(0, 0, 1, 0.5f);
         Gizmos.DrawCube(transform.position + pillowMessyCenterOffset, pillowMessySize);
-        
-        // Visualisasi radius safety
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position + pillowMessyCenterOffset, maxDistanceFromBed);
     }

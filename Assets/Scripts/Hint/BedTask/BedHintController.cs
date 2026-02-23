@@ -46,12 +46,11 @@ public class BedHintController : MonoBehaviour
 
         if (isHoldingCurrentPillow)
         {
-            if (currentTargetIndex < bedManager.pillowTargetZones.Length)
-                return bedManager.pillowTargetZones[currentTargetIndex].transform.position + offset;
+            return bedManager.pillowTargetZones[currentTargetIndex].transform.position + offset;
         }
         else
         {
-            var targetPillow = GetPillowByIndex(currentTargetIndex);
+            Transform targetPillow = GetPillowByIndex(currentTargetIndex);
             if (targetPillow != null) return targetPillow.transform.position + offset;
         }
         return hintDiamond.transform.position;
@@ -59,6 +58,7 @@ public class BedHintController : MonoBehaviour
 
     Transform GetPillowByIndex(int index)
     {
+        if (bedManager == null) return null;
         switch (index)
         {
             case 0: return bedManager.pillow1 != null ? bedManager.pillow1.transform : null;
@@ -91,19 +91,13 @@ public class BedHintController : MonoBehaviour
 
     public void OnPillowPlacedSuccess(int placedIndex)
     {
-        bool isCorrect = false;
-        if (levelMode == 3) isCorrect = true; // Asal nempel = Benar
-        else if (placedIndex == currentTargetIndex) isCorrect = true; // Harus urut
-
-        if (isCorrect)
+        isHoldingCurrentPillow = false;
+        currentTargetIndex++;
+        
+        if (currentTargetIndex >= 4) 
         {
-            isHoldingCurrentPillow = false;
-            currentTargetIndex++;
-            if (currentTargetIndex >= 4) 
-            {
-                allTasksCompleted = true;
-                hintDiamond.SetActive(false);
-            }
+            allTasksCompleted = true;
+            if (hintDiamond != null) hintDiamond.SetActive(false);
         }
     }
 }
