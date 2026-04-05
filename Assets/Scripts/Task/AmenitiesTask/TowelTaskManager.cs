@@ -73,15 +73,19 @@ public class TowelTaskManager : MonoBehaviour
     // Dipanggil oleh TowelSensor saat handuk bersih masuk rak
     public void OnCleanTowelEnterRack(GameObject cleanTowel)
     {
-        if (isCleanTowelPlaced) return;
+    if (isCleanTowelPlaced) return;
 
-        if (hintController != null) hintController.OnCleanTaskFinished();
-        
-        Destroy(cleanTowel);
-        if (finalTowel != null) finalTowel.SetActive(true);
-        isCleanTowelPlaced = true;
-        
-        // Lapor Selesai ke Global
-        if (globalManager != null) globalManager.OnTowelFinished();
+    if (hintController != null) hintController.OnCleanTaskFinished();
+    
+    Destroy(cleanTowel);
+    if (finalTowel != null) finalTowel.SetActive(true);
+    isCleanTowelPlaced = true;
+
+    if (VRTrainingRecorder.Instance != null)
+    {
+        VRTrainingRecorder.Instance.MarkTowelCompleted();
     }
+    
+    if (globalManager != null) globalManager.OnTowelFinished();
+}
 }

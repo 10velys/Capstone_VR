@@ -312,9 +312,14 @@ public class BedTaskManager : MonoBehaviour
     }
 
     void CompletePillowTask()
+{
+    currentState = BedTaskState.TaskComplete;
+
+    if (VRTrainingRecorder.Instance != null)
     {
-        currentState = BedTaskState.TaskComplete;
+        VRTrainingRecorder.Instance.MarkBeddingCompleted();
     }
+}
 
     void OnDrawGizmosSelected()
     {

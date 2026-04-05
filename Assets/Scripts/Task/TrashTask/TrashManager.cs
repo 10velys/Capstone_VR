@@ -116,23 +116,23 @@ public class TrashManager : MonoBehaviour
     }
 
     public void CheckTrashProgress()
+{
+    collectedCount++;
+    Debug.Log($"Sampah Terkumpul: {collectedCount}/{totalTrash}");
+    
+    if (collectedCount >= totalTrash)
     {
-        collectedCount++;
-        Debug.Log($"Sampah Terkumpul: {collectedCount}/{totalTrash}");
-        
-        if (collectedCount >= totalTrash)
+        Debug.Log("SEMUA SAMPAH SELESAI!");
+
+        if (VRTrainingRecorder.Instance != null)
         {
-            Debug.Log("SEMUA SAMPAH SELESAI!");
-            if (globalManager != null) 
-            {
-                globalManager.OnTrashFinished();
-            }
+            VRTrainingRecorder.Instance.MarkTrashCompleted();
+        }
+
+        if (globalManager != null) 
+        {
+            globalManager.OnTrashFinished();
         }
     }
-
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireCube(transform.position, new Vector3(randomAreaSize.x, 0.1f, randomAreaSize.y));
-    }
+}
 }
