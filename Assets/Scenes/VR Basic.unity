@@ -4973,7 +4973,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 405286, guid: 7ce28fe856d34dc4b908e0d8b1323fb6, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.121
+      value: 0.254
       objectReference: {fileID: 0}
     - target: {fileID: 405286, guid: 7ce28fe856d34dc4b908e0d8b1323fb6, type: 3}
       propertyPath: m_LocalPosition.y
@@ -16875,6 +16875,18 @@ MonoBehaviour:
   current_level: 1
   hesitationThreshold: 0.05
   validDetectionThreshold: 0.01
+  minValidDeltaTime: 0.005
+  maxValidDeltaTime: 0.1
+  velocitySmoothingTime: 0.08
+  accelerationSmoothingTime: 0.1
+  maxJerkClamp: 5000
+  writeDebugLog: 1
+  writeMotionSummaryToDebug: 0
+  motionDebugInterval: 1
+  useYoloFallbackCompletion: 1
+  yoloTaskConfidenceThreshold: 0.6
+  yoloEvidenceCooldown: 0.35
+  requiredEvidencePerSuccessLabel: 2
 --- !u!1 &1853498995
 GameObject:
   m_ObjectHideFlags: 0
