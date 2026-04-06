@@ -30,9 +30,9 @@ public class GlobalRoomManager : MonoBehaviour
 
     private void Start()
     {
-        if(trashHintScript) trashHintScript.SetLevel(currentLevelStage);
-        if(bedHintScript) bedHintScript.SetLevel(currentLevelStage);
-        if(towelHintScript) towelHintScript.SetLevel(currentLevelStage);
+        if (trashHintScript) trashHintScript.SetLevel(currentLevelStage);
+        if (bedHintScript) bedHintScript.SetLevel(currentLevelStage);
+        if (towelHintScript) towelHintScript.SetLevel(currentLevelStage);
 
         StartCoroutine(InitSequence());
     }
@@ -41,46 +41,50 @@ public class GlobalRoomManager : MonoBehaviour
     {
         Debug.Log($"GlobalManager: Starting Level Mode {currentLevelStage}...");
         yield return new WaitForSeconds(0.1f);
-        DisableAllTasks(); 
+        DisableAllTasks();
         yield return new WaitForSeconds(1.0f);
         StartTrashTask();
     }
 
     void DisableAllTasks()
     {
-        if(trashManager) trashManager.ToggleInteraction(false);
-        if(bedManager) bedManager.ToggleInteraction(false);
-        if(towelManager) towelManager.ToggleInteraction(false);
+        if (trashManager) trashManager.ToggleInteraction(false);
+        if (bedManager) bedManager.ToggleInteraction(false);
+        if (towelManager) towelManager.ToggleInteraction(false);
 
-        if(trashHintScript) trashHintScript.enabled = false;
-        if(bedHintScript) bedHintScript.enabled = false;
-        if(towelHintScript) towelHintScript.enabled = false;
+        if (trashHintScript) trashHintScript.enabled = false;
+        if (bedHintScript) bedHintScript.enabled = false;
+        if (towelHintScript) towelHintScript.enabled = false;
 
-        if(trashDiamondObj) trashDiamondObj.SetActive(false);
-        if(bedDiamondObj) bedDiamondObj.SetActive(false);
-        if(towelDiamondObj) towelDiamondObj.SetActive(false);
+        if (trashDiamondObj) trashDiamondObj.SetActive(false);
+        if (bedDiamondObj) bedDiamondObj.SetActive(false);
+        if (towelDiamondObj) towelDiamondObj.SetActive(false);
     }
 
     // --- PHASE 1: TRASH ---
     void StartTrashTask()
     {
         Debug.Log(">>> PHASE 1 STARTED: TRASH <<<");
+
         if (VRTrainingRecorder.Instance != null)
         {
             VRTrainingRecorder.Instance.current_level = currentLevelStage;
             VRTrainingRecorder.Instance.StartRecording();
         }
-        if(trashManager) trashManager.ToggleInteraction(true);
-        if(trashHintScript) trashHintScript.enabled = true;      
-        if(trashDiamondObj) trashDiamondObj.SetActive(true);      
+
+        if (trashManager) trashManager.ToggleInteraction(true);
+        if (trashHintScript) trashHintScript.enabled = true;
+        if (trashDiamondObj) trashDiamondObj.SetActive(true);
     }
 
     public void OnTrashFinished()
     {
         Debug.Log(">>> PHASE 1 COMPLETED <<<");
-        if(trashManager) trashManager.ToggleInteraction(false); 
-        if(trashHintScript) trashHintScript.enabled = false;      
-        if(trashDiamondObj) trashDiamondObj.SetActive(false);     
+
+        if (trashManager) trashManager.ToggleInteraction(false);
+        if (trashHintScript) trashHintScript.enabled = false;
+        if (trashDiamondObj) trashDiamondObj.SetActive(false);
+
         StartBedTask();
     }
 
@@ -88,17 +92,20 @@ public class GlobalRoomManager : MonoBehaviour
     void StartBedTask()
     {
         Debug.Log(">>> PHASE 2 STARTED: BED <<<");
-        if(bedManager) bedManager.ToggleInteraction(true); 
-        if(bedHintScript) bedHintScript.enabled = true;        
-        if(bedDiamondObj) bedDiamondObj.SetActive(true);       
+
+        if (bedManager) bedManager.ToggleInteraction(true);
+        if (bedHintScript) bedHintScript.enabled = true;
+        if (bedDiamondObj) bedDiamondObj.SetActive(true);
     }
 
     public void OnBedFinished()
     {
         Debug.Log(">>> PHASE 2 COMPLETED <<<");
-        if(bedManager) bedManager.ToggleInteraction(false);
-        if(bedHintScript) bedHintScript.enabled = false;       
-        if(bedDiamondObj) bedDiamondObj.SetActive(false);      
+
+        if (bedManager) bedManager.ToggleInteraction(false);
+        if (bedHintScript) bedHintScript.enabled = false;
+        if (bedDiamondObj) bedDiamondObj.SetActive(false);
+
         StartTowelTask();
     }
 
@@ -106,46 +113,73 @@ public class GlobalRoomManager : MonoBehaviour
     void StartTowelTask()
     {
         Debug.Log(">>> PHASE 3 STARTED: TOWEL <<<");
-        if(towelManager) towelManager.ToggleInteraction(true); 
-        if(towelHintScript) towelHintScript.enabled = true;      
-        if(towelDiamondObj) towelDiamondObj.SetActive(true);     
+
+        if (towelManager) towelManager.ToggleInteraction(true);
+        if (towelHintScript) towelHintScript.enabled = true;
+        if (towelDiamondObj) towelDiamondObj.SetActive(true);
     }
 
     public void OnTowelFinished()
     {
         Debug.Log(">>> ALL TASKS COMPLETED <<<");
-        
-        // 1. Matikan Interaksi
-        if(towelManager) towelManager.ToggleInteraction(false);
-        if(towelHintScript) towelHintScript.enabled = false;
-        if(towelDiamondObj) towelDiamondObj.SetActive(false);
 
-        // 2. STOP RECORDING
+        // 1. Matikan interaksi
+        if (towelManager) towelManager.ToggleInteraction(false);
+        if (towelHintScript) towelHintScript.enabled = false;
+        if (towelDiamondObj) towelDiamondObj.SetActive(false);
+
+        // 2. Stop recording
         if (VRTrainingRecorder.Instance != null)
         {
-            VRTrainingRecorder.Instance.StopAndSave(); 
+            VRTrainingRecorder.Instance.StopAndSave();
         }
 
-        // 3. AI PREDICTION & LOGIC BARU
-        double[] prediction = null; 
-        double prob_pass = 0.0; // Default 0
+        // 3. AI prediction
+        double[] prediction = null;
+        double prob_pass = 0.0;
 
         if (VRTrainingRecorder.Instance != null)
         {
-            double[] inputFeatures = VRTrainingRecorder.Instance.GetCurrentFeatureVector();
-            prediction = RandomForestModel.Score(inputFeatures);
-            
+            // Ambil 6 fitur khusus model
+            double[] rawFeatures = VRTrainingRecorder.Instance.GetModelFeatureVector();
+
+            // Standardisasi dulu sebelum scoring
+            double[] scaledFeatures = RandomForestModel.Standardize(rawFeatures);
+
+            // Debug agar mudah dibandingkan dengan Python
+            Debug.Log(
+                $"RAW FEATURES => level={rawFeatures[0]:F4}, " +
+                $"avg_vel={rawFeatures[1]:F4}, jerk={rawFeatures[2]:F4}, " +
+                $"hes={rawFeatures[3]:F4}, focus={rawFeatures[4]:F4}, dur={rawFeatures[5]:F4}"
+            );
+
+            Debug.Log(
+                $"SCALED FEATURES => level={scaledFeatures[0]:F4}, " +
+                $"avg_vel={scaledFeatures[1]:F4}, jerk={scaledFeatures[2]:F4}, " +
+                $"hes={scaledFeatures[3]:F4}, focus={scaledFeatures[4]:F4}, dur={scaledFeatures[5]:F4}"
+            );
+
+            prediction = RandomForestModel.Score(scaledFeatures);
+
             if (prediction != null && prediction.Length >= 2)
             {
-                // Ambil probabilitas LULUS (biasanya index 1)
-                prob_pass = prediction[1]; 
+                // Asumsi index 1 = probabilitas LULUS
+                prob_pass = prediction[1];
                 Debug.Log($"AI Raw Score: Fail={prediction[0]:F4}, Pass={prediction[1]:F4}");
             }
+            else
+            {
+                Debug.LogError("Prediction null atau format output model tidak valid.");
+            }
+        }
+        else
+        {
+            Debug.LogError("VRTrainingRecorder.Instance tidak ditemukan.");
         }
 
-        // --- LOGIKA FEEDBACK SESUAI REQUEST ---
+        // 4. Logic feedback
         string feedbackMsg = "";
-        
+
         if (prob_pass >= 0.90)
         {
             feedbackMsg = "Luar biasa! Motorikmu sangat stabil dan fokusmu sempurna.";
@@ -167,18 +201,17 @@ public class GlobalRoomManager : MonoBehaviour
             feedbackMsg = "Ayo berlatih lagi. Fokuslah pada satu tugas sampai selesai.";
         }
 
-        // Tentukan Status Lulus/Gagal (Threshold 0.5)
+        // 5. Tentukan status lulus/gagal
         bool isPassed = (prob_pass >= 0.50);
 
         Debug.Log($"<color={(isPassed ? "green" : "red")}>RESULT: {isPassed} (Score: {prob_pass:P1})</color>");
         Debug.Log($"MSG: {feedbackMsg}");
-        
-        // 4. KIRIM KE UI
+
+        // 6. Kirim ke UI
         VRLevelManager uiManager = FindObjectOfType<VRLevelManager>();
-        
+
         if (uiManager != null)
         {
-            // Parameter confidence (prob_pass) tetap dikirim meski mungkin tidak ditampilkan
             uiManager.ShowLevelCompleteUI(isPassed, prob_pass, feedbackMsg);
         }
         else
@@ -191,6 +224,6 @@ public class GlobalRoomManager : MonoBehaviour
     {
         if (currentLevelStage == 1) return level2SceneName;
         if (currentLevelStage == 2) return level3SceneName;
-        return ""; 
+        return "";
     }
 }

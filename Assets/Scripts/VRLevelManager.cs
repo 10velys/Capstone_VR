@@ -1,55 +1,96 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
-using TMPro; 
+using TMPro;
 
 public class VRLevelManager : MonoBehaviour
 {
     [Header("UI References")]
-    public GameObject mainMenuCanvas;       
-    public GameObject levelCompleteCanvas;  
+    public GameObject mainMenuCanvas;
+    public GameObject levelCompleteCanvas;
 
     [Header("AI Result Buttons")]
-    public GameObject btnNextLevel;         
-    public GameObject btnRetry;             
-    
+    public GameObject btnNextLevel;
+    public GameObject btnRetry;
+
     [Header("AI Result Texts")]
-    public TextMeshProUGUI resultText;      // Judul "LEVEL COMPLETED / FAILED"
-    
-    // HAPUS: public TextMeshProUGUI confidenceText; (Sesuai permintaan)
-    
-    public TextMeshProUGUI feedbackText;    // Text untuk Pesan Personalisasi AI
+    public TextMeshProUGUI confidenceText;   // text probability
+    public TextMeshProUGUI feedbackText;     // text feedback
 
     public static bool isRestartingLevel1 = false;
 
+    private void Awake()
+    {
+        ResolveUIReferences();
+    }
+
     void Start()
     {
-        // --- LOGIKA MENU LEVEL 1 ---
+        ResolveUIReferences();
+
         if (SceneManager.GetActiveScene().name == "VR Basic")
         {
             if (isRestartingLevel1)
             {
-                if (mainMenuCanvas != null) mainMenuCanvas.SetActive(false);
-                isRestartingLevel1 = false; 
+                if (mainMenuCanvas != null)
+                    mainMenuCanvas.SetActive(false);
+
+                isRestartingLevel1 = false;
             }
             else
             {
-                if (mainMenuCanvas != null) mainMenuCanvas.SetActive(true);
+                if (mainMenuCanvas != null)
+                    mainMenuCanvas.SetActive(true);
             }
         }
         else
         {
-            if (mainMenuCanvas != null) mainMenuCanvas.SetActive(false);
+            if (mainMenuCanvas != null)
+                mainMenuCanvas.SetActive(false);
         }
 
-        if (levelCompleteCanvas != null) levelCompleteCanvas.SetActive(false);
+        if (levelCompleteCanvas != null)
+            levelCompleteCanvas.SetActive(false);
+
+        if (confidenceText != null)
+            confidenceText.text = "";
+
+        if (feedbackText != null)
+            feedbackText.text = "";
+    }
+
+    private void ResolveUIReferences()
+    {
+        if (levelCompleteCanvas == null)
+        {
+            Debug.LogWarning("levelCompleteCanvas belum di-assign.");
+            return;
+        }
+
+        Transform confTf = levelCompleteCanvas.transform.Find("ConfidenceText");
+        if (confTf != null)
+        {
+            confidenceText = confTf.GetComponent<TextMeshProUGUI>();
+        }
+
+        Transform feedTf = levelCompleteCanvas.transform.Find("FeedbackText");
+        if (feedTf != null)
+        {
+            feedbackText = feedTf.GetComponent<TextMeshProUGUI>();
+        }
+
+        Debug.Log(
+            $"ResolveUIReferences => " +
+            $"confidenceText={(confidenceText != null ? confidenceText.name : "NULL")}, " +
+            $"feedbackText={(feedbackText != null ? feedbackText.name : "NULL")}"
+        );
     }
 
     public void SelectLevel(string levelName)
     {
         if (levelName == "VR Basic")
         {
-            if (mainMenuCanvas != null) mainMenuCanvas.SetActive(false);
+            if (mainMenuCanvas != null)
+                mainMenuCanvas.SetActive(false);
         }
         else
         {
@@ -57,63 +98,80 @@ public class VRLevelManager : MonoBehaviour
         }
     }
 
-    // --- FUNGSI SAAT TASK SELESAI ---
-    // Parameter confidence tetap diterima agar tidak error dipanggil GlobalRoomManager, 
-    // tapi tidak kita gunakan di dalam fungsi.
     public void ShowLevelCompleteUI(bool isPassed, double confidence, string feedbackMsg)
     {
-        // 1. Matikan menu utama, nyalakan panel hasil DULUAN
-        if (mainMenuCanvas != null) mainMenuCanvas.SetActive(false);
-        if (levelCompleteCanvas != null) levelCompleteCanvas.SetActive(true);
-            
-        // 2. Set Text Judul
-        if (resultText != null)
+        ResolveUIReferences();
+
+        if (mainMenuCanvas != null)
+            mainMenuCanvas.SetActive(false);
+
+        if (levelCompleteCanvas != null)
+            levelCompleteCanvas.SetActive(true);
+
+        Color resultColor = isPassed ? Color.green : Color.red;
+
+        // Probability
+        if (confidenceText != null)
         {
-            resultText.text = isPassed ? "LEVEL COMPLETED" : "LEVEL FAILED";
-            resultText.color = isPassed ? Color.green : Color.red;
+            confidenceText.gameObject.SetActive(true);
+            confidenceText.text = $"Probabilitas Lulus: {confidence * 100:F1}%";
+            confidenceText.color = resultColor;
+            confidenceText.fontSize = 24;
+            confidenceText.ForceMeshUpdate();
+
+            Debug.Log($"SET confidenceText => {confidenceText.text} | object={confidenceText.name}");
+        }
+        else
+        {
+            Debug.LogWarning("confidenceText NULL saat ShowLevelCompleteUI.");
         }
 
-        // 3. Set Text Feedback (PERBAIKAN UTAMA DI SINI)
+        // Feedback
         if (feedbackText != null)
         {
-            // Debugging: Cek di Console apakah pesannya masuk
-            Debug.Log($"Menampilkan Feedback di UI: {feedbackMsg}"); 
+            feedbackText.gameObject.SetActive(true);
             feedbackText.text = feedbackMsg;
+            feedbackText.color = resultColor;
+            feedbackText.ForceMeshUpdate();
+
+            Debug.Log($"SET feedbackText => {feedbackText.text} | object={feedbackText.name}");
         }
         else
         {
-            // Peringatan jika Anda lupa Drag & Drop di Inspector
-            Debug.LogError("ERROR: 'feedbackText' belum di-assign di Inspector VRLevelManager! Pesan tidak akan muncul.");
+            Debug.LogWarning("feedbackText NULL saat ShowLevelCompleteUI.");
         }
 
-        // (Bagian Confidence Score SUDAH DIHAPUS dari sini)
+        Debug.Log($"UI RESULT => Passed={isPassed}, Confidence={confidence * 100:F1}%, Feedback={feedbackMsg}");
 
-        // 4. Atur Tombol
+        // Buttons
         if (isPassed)
         {
-            if(btnNextLevel) btnNextLevel.SetActive(true);
-            if(btnRetry) btnRetry.SetActive(false); 
+            if (btnNextLevel != null) btnNextLevel.SetActive(true);
+            if (btnRetry != null) btnRetry.SetActive(false);
         }
         else
         {
-            if(btnNextLevel) btnNextLevel.SetActive(false);
-            if(btnRetry) btnRetry.SetActive(true);
+            if (btnNextLevel != null) btnNextLevel.SetActive(false);
+            if (btnRetry != null) btnRetry.SetActive(true);
         }
     }
 
     public void RestartCurrentLevel()
     {
         string currentScene = SceneManager.GetActiveScene().name;
+
         if (currentScene == "VR Basic")
         {
             isRestartingLevel1 = true;
         }
+
         SceneManager.LoadScene(currentScene);
     }
 
     public void LoadNextLevel()
     {
         int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
+
         if (nextSceneIndex < SceneManager.sceneCountInBuildSettings)
         {
             SceneManager.LoadScene(nextSceneIndex);
@@ -121,8 +179,20 @@ public class VRLevelManager : MonoBehaviour
         else
         {
             Debug.Log("Sudah tamat!");
-            if(resultText) resultText.text = "ALL LEVELS COMPLETED!";
-            if(btnNextLevel) btnNextLevel.SetActive(false);
+
+            if (btnNextLevel != null)
+                btnNextLevel.SetActive(false);
+
+            if (confidenceText != null)
+            {
+                confidenceText.text = "Semua level selesai!";
+                confidenceText.color = Color.green;
+            }
+
+            if (feedbackText != null)
+            {
+                feedbackText.text = "";
+            }
         }
     }
 }

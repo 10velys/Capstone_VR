@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 public class VRTrainingRecorder : MonoBehaviour
 {
@@ -218,7 +217,7 @@ public class VRTrainingRecorder : MonoBehaviour
     }
 
     // ----------------------------------------------------------------------
-    // TASK COMPLETION API (INI JALUR YANG BENAR: panggil dari gameplay event)
+    // TASK COMPLETION API
     // ----------------------------------------------------------------------
     public void MarkTrashCompleted() => MarkTaskCompleted(TaskCategory.Trash, "GameEvent");
     public void MarkBeddingCompleted() => MarkTaskCompleted(TaskCategory.Bedding, "GameEvent");
@@ -328,6 +327,24 @@ public class VRTrainingRecorder : MonoBehaviour
     // ----------------------------------------------------------------------
     // FEATURE BUILDING
     // ----------------------------------------------------------------------
+
+    // Untuk model ML (6 fitur saja)
+    public double[] GetModelFeatureVector()
+    {
+        SessionFeatures f = BuildCurrentFeatures();
+
+        return new double[]
+        {
+            current_level,
+            f.avg_hand_velocity,
+            f.max_hand_jerk,
+            f.hesitation_time,
+            f.focus_consistency,
+            f.total_duration
+        };
+    }
+
+    // Untuk debug / CSV / inspeksi manual (9 fitur, termasuk task flags)
     public double[] GetCurrentFeatureVector()
     {
         SessionFeatures f = BuildCurrentFeatures();
