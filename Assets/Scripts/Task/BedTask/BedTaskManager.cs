@@ -36,7 +36,7 @@ public class BedTaskManager : MonoBehaviour
     public float maxMessyTilt = 20f;
    
     [Header("Task Settings")]
-    public float placementPrecision = 0.4f;
+    public float placementPrecision = 0.5f;
     
     [Header("Safety Settings")]
     public float maxDistanceFromBed = 3.0f;

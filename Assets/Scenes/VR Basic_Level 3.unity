@@ -560,7 +560,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.8049227, y: 0.38731456, z: 0.3733802}
+  m_Size: {x: 1, y: 0.6, z: 0.6}
   m_Center: {x: -0.00000002836279, y: 0.19321144, z: 0.00000094766875}
 --- !u!1001 &124760888
 PrefabInstance:
@@ -2989,7 +2989,7 @@ MonoBehaviour:
   pillowMessyCenterOffset: {x: 1, y: 0.8, z: 0.2}
   pillowMessySize: {x: 3, y: 0.2, z: 2.5}
   maxMessyTilt: 10
-  placementPrecision: 0.1
+  placementPrecision: 0.5
   maxDistanceFromBed: 3
 --- !u!1001 &713115927
 PrefabInstance:
@@ -3640,7 +3640,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.77979064, y: 0.64058703, z: 0.31766868}
+  m_Size: {x: 1.2, y: 1, z: 0.6}
   m_Center: {x: 0.000000032649496, y: 0.31870368, z: -0.057244193}
 --- !u!1 &988598815
 GameObject:
@@ -3865,7 +3865,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.80492276, y: 0.3873146, z: 0.37338018}
+  m_Size: {x: 1, y: 0.6, z: 0.6}
   m_Center: {x: -0.000000028182852, y: 0.19321121, z: -0.0000009556136}
 --- !u!1001 &1029612318
 PrefabInstance:
@@ -5281,6 +5281,18 @@ MonoBehaviour:
   current_level: 3
   hesitationThreshold: 0.05
   validDetectionThreshold: 0.01
+  minValidDeltaTime: 0.005
+  maxValidDeltaTime: 0.1
+  velocitySmoothingTime: 0.08
+  accelerationSmoothingTime: 0.1
+  maxJerkClamp: 5000
+  writeDebugLog: 1
+  writeMotionSummaryToDebug: 0
+  motionDebugInterval: 1
+  useYoloFallbackCompletion: 1
+  yoloTaskConfidenceThreshold: 0.6
+  yoloEvidenceCooldown: 0.35
+  requiredEvidencePerSuccessLabel: 2
 --- !u!4 &1313694704
 Transform:
   m_ObjectHideFlags: 0
@@ -7758,7 +7770,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.7797904, y: 0.64058703, z: 0.31766865}
+  m_Size: {x: 1.2, y: 1, z: 0.6}
   m_Center: {x: 0.000000029764887, y: 0.31870344, z: -0.05724513}
 --- !u!1001 &1810715728
 PrefabInstance:
@@ -8751,7 +8763,7 @@ MonoBehaviour:
   levelCompleteCanvas: {fileID: 1653909214}
   btnNextLevel: {fileID: 1974182144}
   btnRetry: {fileID: 652384134}
-  resultText: {fileID: 1832141592}
+  confidenceText: {fileID: 0}
   feedbackText: {fileID: 1832141592}
 --- !u!4 &1866428645
 Transform:

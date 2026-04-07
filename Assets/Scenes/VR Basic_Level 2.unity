@@ -1056,7 +1056,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.7797904, y: 0.64058703, z: 0.31766865}
+  m_Size: {x: 1.2, y: 1, z: 0.6}
   m_Center: {x: 0.000000029764887, y: 0.31870344, z: -0.05724513}
 --- !u!1001 &173387939
 PrefabInstance:
@@ -3466,7 +3466,7 @@ MonoBehaviour:
   levelCompleteCanvas: {fileID: 48793452}
   btnNextLevel: {fileID: 1125045077}
   btnRetry: {fileID: 1586963039}
-  resultText: {fileID: 1300954831}
+  confidenceText: {fileID: 0}
   feedbackText: {fileID: 1300954831}
 --- !u!4 &425218539
 Transform:
@@ -3914,7 +3914,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.8049227, y: 0.38731456, z: 0.3733802}
+  m_Size: {x: 1, y: 0.6, z: 0.6}
   m_Center: {x: -0.00000002836279, y: 0.19321144, z: 0.00000094766875}
 --- !u!1001 &532836858
 PrefabInstance:
@@ -4011,7 +4011,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.80492276, y: 0.3873146, z: 0.37338018}
+  m_Size: {x: 1, y: 0.6, z: 0.6}
   m_Center: {x: -0.000000028182852, y: 0.19321121, z: -0.0000009556136}
 --- !u!1001 &540358173
 PrefabInstance:
@@ -5691,7 +5691,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.77979064, y: 0.64058703, z: 0.31766868}
+  m_Size: {x: 1.2, y: 1, z: 0.6}
   m_Center: {x: 0.000000032649496, y: 0.31870368, z: -0.057244193}
 --- !u!1 &953823968
 GameObject:
@@ -11501,6 +11501,18 @@ MonoBehaviour:
   current_level: 2
   hesitationThreshold: 0.05
   validDetectionThreshold: 0.01
+  minValidDeltaTime: 0.005
+  maxValidDeltaTime: 0.1
+  velocitySmoothingTime: 0.08
+  accelerationSmoothingTime: 0.1
+  maxJerkClamp: 5000
+  writeDebugLog: 1
+  writeMotionSummaryToDebug: 0
+  motionDebugInterval: 1
+  useYoloFallbackCompletion: 1
+  yoloTaskConfidenceThreshold: 0.6
+  yoloEvidenceCooldown: 0.35
+  requiredEvidencePerSuccessLabel: 2
 --- !u!4 &2117991328
 Transform:
   m_ObjectHideFlags: 0
@@ -11651,7 +11663,7 @@ MonoBehaviour:
   pillowMessyCenterOffset: {x: 1, y: 0.8, z: 0.2}
   pillowMessySize: {x: 3, y: 0.2, z: 2.5}
   maxMessyTilt: 10
-  placementPrecision: 0.1
+  placementPrecision: 0.5
   maxDistanceFromBed: 3
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
