@@ -218,6 +218,7 @@ public class BedTaskManager : MonoBehaviour
         {
             if (pillow != null)
             {
+                pillow.useDynamicAttach = true;
                 pillow.selectExited.AddListener(CheckPillowPlacement);
             }
         }
@@ -232,6 +233,7 @@ public class BedTaskManager : MonoBehaviour
 
         Collider pillowCollider = grabbedPillow.GetComponent<Collider>();
         int pillowIndex = System.Array.IndexOf(allPillows, grabbedPillow);
+        
         int level = (globalManager != null) ? globalManager.currentLevelStage : 1;
 
         if (level == 1)
@@ -260,7 +262,7 @@ public class BedTaskManager : MonoBehaviour
                 if (CheckFit(pillowCollider, targetZone))
                 {
                     ApplyPlacement(grabbedPillow, targetZone, j);
-                    break;
+                    break; 
                 }
             }
         }
@@ -270,9 +272,9 @@ public class BedTaskManager : MonoBehaviour
 
     private bool CheckFit(Collider pillow, Collider zone)
     {
-        bool isOverlapping = zone.bounds.Intersects(pillow.bounds);
-        float centerDistance = Vector3.Distance(pillow.bounds.center, zone.bounds.center);
-        return isOverlapping && centerDistance <= placementPrecision;
+        bool isOverlapping = zone.bounds.Intersects(pillow.bounds);  
+        float distance = Vector3.Distance(pillow.transform.position, zone.transform.position);
+        return isOverlapping && distance <= placementPrecision;
     }
 
     private void ApplyPlacement(UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable pillow, Collider zone, int index)
@@ -312,14 +314,14 @@ public class BedTaskManager : MonoBehaviour
     }
 
     void CompletePillowTask()
-{
-    currentState = BedTaskState.TaskComplete;
-
-    if (VRTrainingRecorder.Instance != null)
     {
-        VRTrainingRecorder.Instance.MarkBeddingCompleted();
+        currentState = BedTaskState.TaskComplete;
+
+        if (VRTrainingRecorder.Instance != null)
+        {
+            VRTrainingRecorder.Instance.MarkBeddingCompleted();
+        }
     }
-}
 
     void OnDrawGizmosSelected()
     {
