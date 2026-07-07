@@ -1,5 +1,7 @@
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit.Interactables; // Pastikan namespace ini ada untuk Unity 6/XRI terbaru
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine.XR.Interaction.Toolkit.Interactables; 
 
 public class TowelTaskManager : MonoBehaviour
 {
@@ -13,7 +15,6 @@ public class TowelTaskManager : MonoBehaviour
     public GameObject dirtyTowelFolded; 
     
     [Header("Interactables")]
-    // Referensi ke komponen grab agar kita bisa nyalakan/matikan
     public XRGrabInteractable dirtyTowelInteractable; 
     public XRGrabInteractable cleanTowelInteractable; 
 
@@ -21,48 +22,106 @@ public class TowelTaskManager : MonoBehaviour
     public bool isDirtyTowelCleared = false;
     public bool isCleanTowelPlaced = false;
 
+    [Header("Safety Settings")]
+    public Vector3 taskCenterOffset = new Vector3(10.94f, 0.33f, -77.2f); 
+    public float maxDistanceFromTask = 4.0f;
+
+    private Vector3 initialDirtyPos;
+    private Quaternion initialDirtyRot;
+    private Vector3 initialCleanPos;
+    private Quaternion initialCleanRot;
+
     void Start()
     {
-        // Matikan interaksi handuk di awal (Tunggu perintah Global)
-        // Kirim false untuk mematikan keduanya
+        if (dirtyTowelInteractable != null)
+        {
+            initialDirtyPos = dirtyTowelInteractable.transform.position;
+            initialDirtyRot = dirtyTowelInteractable.transform.rotation;
+        }
+
+        if (cleanTowelInteractable != null)
+        {
+            initialCleanPos = cleanTowelInteractable.transform.position;
+            initialCleanRot = cleanTowelInteractable.transform.rotation;
+        }
+
         ToggleInteraction(false);
+    }
+
+    void FixedUpdate()
+    {
+        Vector3 globalCenter = transform.position + taskCenterOffset;
+
+        if (dirtyTowelInteractable != null && !isDirtyTowelCleared && dirtyTowelInteractable.enabled)
+        {
+            if (!dirtyTowelInteractable.isSelected)
+            {
+                float dist = Vector3.Distance(globalCenter, dirtyTowelInteractable.transform.position);
+                if (dist > maxDistanceFromTask)
+                {
+                    RespawnTowel(dirtyTowelInteractable, initialDirtyPos, initialDirtyRot);
+                }
+            }
+        }
+
+        if (cleanTowelInteractable != null && !isCleanTowelPlaced && cleanTowelInteractable.enabled)
+        {
+            if (!cleanTowelInteractable.isSelected)
+            {
+                float dist = Vector3.Distance(globalCenter, cleanTowelInteractable.transform.position);
+                if (dist > maxDistanceFromTask)
+                {
+                    RespawnTowel(cleanTowelInteractable, initialCleanPos, initialCleanRot);
+                }
+            }
+        }
+    }
+
+    void RespawnTowel(XRGrabInteractable towel, Vector3 targetPos, Quaternion targetRot)
+    {
+        Rigidbody rb = towel.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
+        }
+
+        towel.transform.position = targetPos;
+        towel.transform.rotation = targetRot;
+
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+        }
     }
 
     public void ToggleInteraction(bool state)
     {
         if (state == true)
         {
-            // --- LOGIKA BARU: URUTAN SEKUENSIAL ---
-            // Saat tugas dimulai (state = true), HANYA nyalakan handuk kotor.
-            // Handuk bersih tetap mati sampai handuk kotor selesai.
             if (dirtyTowelInteractable != null) dirtyTowelInteractable.enabled = true;
             if (cleanTowelInteractable != null) cleanTowelInteractable.enabled = false;
         }
         else
         {
-            // Jika state = false (Tugas belum mulai / selesai), matikan semua
             if (dirtyTowelInteractable != null) dirtyTowelInteractable.enabled = false;
             if (cleanTowelInteractable != null) cleanTowelInteractable.enabled = false;
         }
     }
 
-    // Dipanggil oleh TowelSensor saat handuk kotor masuk keranjang
     public void OnDirtyTowelEnterBasket(GameObject dirtyTowel)
     {
         if (isDirtyTowelCleared) return;
         
         if (hintController != null) hintController.OnDirtyTaskFinished();
         
-        // Hancurkan handuk kotor fisik
         Destroy(dirtyTowel);
         
-        // Munculkan visual tumpukan handuk kotor
         if (dirtyTowelFolded != null) dirtyTowelFolded.SetActive(true);
         
         isDirtyTowelCleared = true;
 
-        // --- TAMBAHAN: Buka Kunci Handuk Bersih ---
-        // Sekarang user baru boleh mengambil handuk bersih
         if (cleanTowelInteractable != null) 
         {
             cleanTowelInteractable.enabled = true;
@@ -70,22 +129,28 @@ public class TowelTaskManager : MonoBehaviour
         }
     }
 
-    // Dipanggil oleh TowelSensor saat handuk bersih masuk rak
     public void OnCleanTowelEnterRack(GameObject cleanTowel)
     {
-    if (isCleanTowelPlaced) return;
+        if (isCleanTowelPlaced) return;
 
-    if (hintController != null) hintController.OnCleanTaskFinished();
-    
-    Destroy(cleanTowel);
-    if (finalTowel != null) finalTowel.SetActive(true);
-    isCleanTowelPlaced = true;
+        if (hintController != null) hintController.OnCleanTaskFinished();
+        
+        Destroy(cleanTowel);
+        if (finalTowel != null) finalTowel.SetActive(true);
+        isCleanTowelPlaced = true;
 
-    if (VRTrainingRecorder.Instance != null)
-    {
-        VRTrainingRecorder.Instance.MarkTowelCompleted();
+        if (VRTrainingRecorder.Instance != null)
+        {
+            VRTrainingRecorder.Instance.MarkTowelCompleted();
+        }
+        
+        if (globalManager != null) globalManager.OnTowelFinished();
     }
-    
-    if (globalManager != null) globalManager.OnTowelFinished();
-}
+
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Vector3 globalCenter = transform.position + taskCenterOffset;
+        Gizmos.DrawWireSphere(globalCenter, maxDistanceFromTask);
+    }
 }

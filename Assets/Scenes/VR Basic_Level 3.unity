@@ -2986,8 +2986,10 @@ MonoBehaviour:
   - {fileID: 1753187621}
   - {fileID: 116380625}
   - {fileID: 1007895175}
-  pillowMessyCenterOffset: {x: 1, y: 0.8, z: 0.2}
-  pillowMessySize: {x: 3, y: 0.2, z: 2.5}
+  floorCenterOffset: {x: 0.7, y: 1, z: 2}
+  sideOffset: 1.8
+  floorSpawnHeight: 1.2
+  sideAreaSize: {x: 1.5, y: 0.1, z: 1}
   maxMessyTilt: 10
   placementPrecision: 0.5
   maxDistanceFromBed: 3
@@ -3316,7 +3318,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 405286, guid: 7ce28fe856d34dc4b908e0d8b1323fb6, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.128
+      value: 0.239
       objectReference: {fileID: 0}
     - target: {fileID: 405286, guid: 7ce28fe856d34dc4b908e0d8b1323fb6, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3713,6 +3715,8 @@ MonoBehaviour:
   cleanTowelInteractable: {fileID: 427745308}
   isDirtyTowelCleared: 0
   isCleanTowelPlaced: 0
+  taskCenterOffset: {x: 1.2, y: 1, z: -1.6}
+  maxDistanceFromTask: 2
 --- !u!1001 &992222917
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5247,6 +5251,7 @@ MonoBehaviour:
   - {fileID: 1343167467}
   - {fileID: 1343167464}
   randomAreaSize: {x: 3, y: 3}
+  maxDistanceFromBin: 5
 --- !u!1 &1313694702
 GameObject:
   m_ObjectHideFlags: 0
