@@ -34,3 +34,16 @@ sysinfo.txt
 *.keystore.meta
 .DS_Store
 Thumbs.db
+# Android / Build Temporary Cache
+/.utmp/
+
+# Burst Compiler Debug Folders (Hasil Build APK)
+*_BurstDebugInformation_DoNotShip/
+*_BurstDebugInformation_DoNotShip*/
+
+# Editor / IDE Local Configs
+/.vscode/
+.vsconfig
+
+# Root Temporary DLLs
+TempAssembly.dll

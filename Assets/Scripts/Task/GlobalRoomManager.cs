@@ -134,85 +134,46 @@ public class GlobalRoomManager : MonoBehaviour
             VRTrainingRecorder.Instance.StopAndSave();
         }
 
-        // 3. AI prediction
-        double[] prediction = null;
+        // 3. AI prediction & Rule-Based Logic
+        double[] rawFeatures = null;
         double prob_pass = 0.0;
 
         if (VRTrainingRecorder.Instance != null)
         {
-            // Ambil 6 fitur khusus model
-            double[] rawFeatures = VRTrainingRecorder.Instance.GetModelFeatureVector();
+            // Ambil 6 fitur mentah
+            rawFeatures = VRTrainingRecorder.Instance.GetModelFeatureVector();
 
-            // Standardisasi dulu sebelum scoring
+            // Standardisasi fitur untuk masuk ke model
             double[] scaledFeatures = RandomForestModel.Standardize(rawFeatures);
 
-            // Debug agar mudah dibandingkan dengan Python
-            Debug.Log(
-                $"RAW FEATURES => level={rawFeatures[0]:F4}, " +
-                $"avg_vel={rawFeatures[1]:F4}, jerk={rawFeatures[2]:F4}, " +
-                $"hes={rawFeatures[3]:F4}, focus={rawFeatures[4]:F4}, dur={rawFeatures[5]:F4}"
-            );
-
-            Debug.Log(
-                $"SCALED FEATURES => level={scaledFeatures[0]:F4}, " +
-                $"avg_vel={scaledFeatures[1]:F4}, jerk={scaledFeatures[2]:F4}, " +
-                $"hes={scaledFeatures[3]:F4}, focus={scaledFeatures[4]:F4}, dur={scaledFeatures[5]:F4}"
-            );
-
-            prediction = RandomForestModel.Score(scaledFeatures);
+            double[] prediction = RandomForestModel.Score(scaledFeatures);
 
             if (prediction != null && prediction.Length >= 2)
             {
-                // Asumsi index 1 = probabilitas LULUS
-                prob_pass = prediction[1];
+                prob_pass = prediction[1]; // Probabilitas Lulus
                 Debug.Log($"AI Raw Score: Fail={prediction[0]:F4}, Pass={prediction[1]:F4}");
-            }
-            else
-            {
-                Debug.LogError("Prediction null atau format output model tidak valid.");
             }
         }
         else
         {
             Debug.LogError("VRTrainingRecorder.Instance tidak ditemukan.");
+            return; // Hentikan eksekusi jika tidak ada data
         }
 
-        // 4. Logic feedback
-        string feedbackMsg = "";
+        // 4. Kalkulasi Risiko dan Keputusan Leveling
+        var riskResult = CalculateRisk(rawFeatures);
+        var decisionResult = LevelingDecision(prob_pass, riskResult.hardFail, riskResult.riskReason);
 
-        if (prob_pass >= 0.90)
-        {
-            feedbackMsg = "Luar biasa! Motorikmu sangat stabil dan fokusmu sempurna.";
-        }
-        else if (prob_pass >= 0.70)
-        {
-            feedbackMsg = "Bagus! Kamu lulus. Cobalah untuk sedikit lebih halus dalam bergerak.";
-        }
-        else if (prob_pass >= 0.50)
-        {
-            feedbackMsg = "Kamu lulus, tapi kamu tampak banyak ragu-ragu.";
-        }
-        else if (prob_pass >= 0.30)
-        {
-            feedbackMsg = "Hampir saja! Fokuslah pada penyelesaian tugas.";
-        }
-        else
-        {
-            feedbackMsg = "Ayo berlatih lagi. Fokuslah pada satu tugas sampai selesai.";
-        }
+        Debug.Log($"<color={(decisionResult.isPassed ? "green" : "red")}>RESULT: {decisionResult.decision} (Prob: {prob_pass:P1})</color>");
+        Debug.Log($"MSG: {decisionResult.message}");
 
-        // 5. Tentukan status lulus/gagal
-        bool isPassed = (prob_pass >= 0.50);
-
-        Debug.Log($"<color={(isPassed ? "green" : "red")}>RESULT: {isPassed} (Score: {prob_pass:P1})</color>");
-        Debug.Log($"MSG: {feedbackMsg}");
-
-        // 6. Kirim ke UI
+        // 5. Kirim ke UI
         VRLevelManager uiManager = FindObjectOfType<VRLevelManager>();
-
         if (uiManager != null)
         {
-            uiManager.ShowLevelCompleteUI(isPassed, prob_pass, feedbackMsg);
+            // Menggabungkan keputusan utama dengan alasannya untuk ditampilkan ke pemain
+            string finalFeedback = $"<b>{decisionResult.decision}</b>\n\n{decisionResult.message}";
+            uiManager.ShowLevelCompleteUI(decisionResult.isPassed, prob_pass, finalFeedback);
         }
         else
         {
@@ -220,10 +181,85 @@ public class GlobalRoomManager : MonoBehaviour
         }
     }
 
-    public string GetNextSceneName()
+    // ============================================================
+    // THRESHOLD RULE-BASED & RISK CALCULATION
+    // ============================================================
+    private (bool hardFail, string riskReason) CalculateRisk(double[] features)
     {
-        if (currentLevelStage == 1) return level2SceneName;
-        if (currentLevelStage == 2) return level3SceneName;
-        return "";
+        // Urutan array sesuai GetModelFeatureVector() di VRTrainingRecorder.cs
+        double level = features[0];
+        double velocity = features[1];
+        double jerk = features[2];
+        double hesitation = features[3];
+        double focus = features[4];
+        double duration = features[5];
+
+        bool hard_fail = false;
+        System.Collections.Generic.List<string> reasons = new System.Collections.Generic.List<string>();
+
+        // 1. Average Hand Velocity
+        if (velocity < 0.12) { hard_fail = true; reasons.Add("velocity sangat rendah"); }
+        else if (velocity < 0.18) { reasons.Add("velocity rendah"); }
+        else if (velocity < 0.22) { reasons.Add("velocity agak rendah"); }
+
+        if (velocity > 0.90) { hard_fail = true; reasons.Add("velocity terlalu tinggi"); }
+        else if (velocity > 0.75) { reasons.Add("velocity agak tinggi"); }
+
+        // 2. Max Hand Jerk
+        if (jerk > 10000.0) { hard_fail = true; reasons.Add("jerk sangat ekstrem"); }
+        else if (jerk >= 5000.0) { reasons.Add("jerk tinggi"); }
+        else if (jerk > 3000.0) { reasons.Add("jerk agak tinggi"); }
+
+        // 3. Hesitation Time
+        if (hesitation > 450.0) { hard_fail = true; reasons.Add("hesitation sangat tinggi"); }
+        else if (hesitation > 300.0) { reasons.Add("hesitation tinggi"); }
+        else if (hesitation > 100.0) { reasons.Add("hesitation agak tinggi"); }
+
+        // 4. Focus Consistency
+        if (focus > 23.0) { hard_fail = true; reasons.Add("fokus sangat tidak stabil"); }
+        else if (focus > 20.0) { reasons.Add("fokus tidak stabil"); }
+        else if (focus > 15.0) { reasons.Add("fokus agak tidak stabil"); }
+
+        // 5. Total Duration
+        double d_warn = (level == 1) ? 420.0 : 450.0;
+        double d_fail = (level == 1) ? 650.0 : 700.0;
+        double d_hard_fail = (level == 1) ? 900.0 : 950.0;
+
+        if (duration > d_hard_fail) { hard_fail = true; reasons.Add("durasi sangat lama"); }
+        else if (duration > d_fail) { reasons.Add("durasi lama"); }
+        else if (duration > d_warn) { reasons.Add("durasi agak lama"); }
+
+        string risk_reason = reasons.Count > 0 ? string.Join(", ", reasons) : "tidak ada risiko";
+        
+        return (hard_fail, risk_reason);
+    }
+
+    // ============================================================
+    // LEVELING DECISION (Berdasarkan Tabel 4.11)
+    // ============================================================
+    private (string decision, string message, bool isPassed) LevelingDecision(double prob_pass, bool hard_fail, string risk_reason)
+    {
+        if (hard_fail)
+        {
+            return ("Ulang Level", "Terdapat kondisi ekstrem: " + risk_reason, false);
+        }
+
+        if (prob_pass >= 0.80)
+        {
+            return ("Naik Level", "Probabilitas lulus tinggi.", true);
+        }
+        else if (prob_pass >= 0.60 && prob_pass < 0.80)
+        {
+            return ("Naik Level dengan Catatan", "Probabilitas cukup, tetapi tetap perlu memperhatikan catatan performa: " + risk_reason, true);
+        }
+        else if (prob_pass >= 0.40 && prob_pass < 0.60)
+        {
+            // Diatur sebagai false agar memunculkan tombol Retry di VRLevelManager (sesuai status "Evaluasi Tambahan")
+            return ("Evaluasi Tambahan", "Probabilitas berada pada area tengah sehingga membutuhkan evaluasi tambahan.", false);
+        }
+        else // prob_pass < 0.40
+        {
+            return ("Ulang Level", "Probabilitas lulus rendah.", false);
+        }
     }
 }
